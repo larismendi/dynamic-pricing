@@ -14,15 +14,17 @@ class PriceTest {
     private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
+    private static final LocalDateTime START_DATE = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
+    private static final LocalDateTime END_DATE = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
 
     private static Price price;
 
-    void getPriceBuilder(LocalDateTime startDate, LocalDateTime endDate) {
+    void getPriceBuilder() {
         price = Price.builder()
                 .brandId(BRAND_ID)
                 .productId(PRODUCT_ID)
-                .startDate(startDate)
-                .endDate(endDate)
+                .startDate(START_DATE)
+                .endDate(END_DATE)
                 .priceList(PRICE_LIST)
                 .priority(PRIORITY)
                 .price(PRICE)
@@ -33,70 +35,57 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsWithinRange() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
         LocalDateTime applicationDate = LocalDateTime.of(2023, 11, 15, 12, 0);
 
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertTrue(price.isApplicable(applicationDate));
     }
 
     @Test
     void testIsApplicableWhenDateIsEqualToStartDate() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 11, 1, 0, 0);
+        LocalDateTime applicationDate = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
 
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertTrue(price.isApplicable(applicationDate));
     }
 
     @Test
     void testIsApplicableWhenDateIsEqualToEndDate() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 1, 23, 59);
+        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
 
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertTrue(price.isApplicable(applicationDate));
     }
 
     @Test
     void testIsApplicableWhenDateIsBeforeStartDate() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 10, 31, 23, 59);
+        LocalDateTime applicationDate = LocalDateTime.of(2023, 10, 31, 23, 59, 59);
 
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertFalse(price.isApplicable(applicationDate));
     }
 
     @Test
     void testIsApplicableWhenDateIsAfterEndDate() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 2, 0, 0);
+        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 2, 0, 0, 0);
 
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertFalse(price.isApplicable(applicationDate));
     }
 
     @Test
     void testPriceBuilderCreatesCorrectObject() {
-        LocalDateTime startDate = LocalDateTime.of(2023, 11, 1, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2023, 12, 1, 23, 59);
-
-        getPriceBuilder(startDate, endDate);
+        getPriceBuilder();
 
         assertEquals(BRAND_ID, price.getBrandId());
         assertEquals(PRODUCT_ID, price.getProductId());
-        assertEquals(startDate, price.getStartDate());
-        assertEquals(endDate, price.getEndDate());
+        assertEquals(START_DATE, price.getStartDate());
+        assertEquals(END_DATE, price.getEndDate());
         assertEquals(PRICE_LIST, price.getPriceList());
         assertEquals(PRIORITY, price.getPriority());
         assertEquals(PRICE, price.getPrice());

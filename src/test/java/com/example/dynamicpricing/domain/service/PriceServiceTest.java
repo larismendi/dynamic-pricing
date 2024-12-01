@@ -26,6 +26,11 @@ public class PriceServiceTest {
     private static final String CURRENCY = "EUR";
     private static final String PRICE_IS_EMPTY = "No price found for the given parameters.";
     private static final String NO_APPLICABLE_PRICE_FOUND = "No applicable price found for the given parameters.";
+    private static final LocalDateTime START_DATE = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
+    private static final LocalDateTime END_DATE = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
+    private static final LocalDateTime START_DATE_2 = LocalDateTime.of(2020, 6, 14, 15, 0, 0);
+    private static final LocalDateTime END_DATE_2 = LocalDateTime.of(2020, 6, 14, 18, 30, 0);
+    private static final LocalDateTime APPLICATION_DATE = LocalDateTime.of(2024, 11, 30, 12, 0, 0);
 
     private static final Logger logger = LoggerFactory.getLogger(PriceServiceTest.class);
 
@@ -71,13 +76,8 @@ public class PriceServiceTest {
     @Test
     void givenPriceFound_whenGetApplicablePrice_thenReturnPrice() {
         LocalDateTime applicationDate = getTestApplicationDate();
-        LocalDateTime startDatePrice1 = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-        LocalDateTime endDatePrice1 = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
-        LocalDateTime startDatePrice2 = LocalDateTime.of(2020, 6, 14, 15, 0, 0);
-        LocalDateTime endDatePrice2 = LocalDateTime.of(2020, 6, 14, 18, 30, 0);
-
-        Price price1 = createPrice(startDatePrice1, endDatePrice1, 1, 1, BigDecimal.valueOf(35.50));
-        Price price2 = createPrice(startDatePrice2, endDatePrice2, 2, 2, BigDecimal.valueOf(25.45));
+        Price price1 = createPrice(START_DATE, END_DATE, 1, 1, BigDecimal.valueOf(35.50));
+        Price price2 = createPrice(START_DATE_2, END_DATE_2, 2, 2, BigDecimal.valueOf(25.45));
 
         mockPriceRepository(List.of(price1, price2));
 
@@ -104,9 +104,7 @@ public class PriceServiceTest {
     @Test
     void givenNoApplicablePrice_whenGetApplicablePrice_thenThrowPriceNotFoundException() {
         LocalDateTime applicationDate = LocalDateTime.of(2020, 6, 15, 10, 0, 0);
-        LocalDateTime startDate = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
-        Price price = createPrice(startDate, endDate, 1, 1, BigDecimal.valueOf(35.50));
+        Price price = createPrice(START_DATE, END_DATE, 1, 1, BigDecimal.valueOf(35.50));
 
         mockPriceRepository(List.of(price));
 
@@ -120,13 +118,9 @@ public class PriceServiceTest {
     @Test
     void givenMultiplePricesWithSamePriority_whenGetApplicablePrice_thenReturnMaxPriority() {
         LocalDateTime applicationDate = getTestApplicationDate();
-        LocalDateTime startDatePrice1 = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-        LocalDateTime endDatePrice1 = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
-        LocalDateTime startDatePrice2 = LocalDateTime.of(2020, 6, 14, 15, 0, 0);
-        LocalDateTime endDatePrice2 = LocalDateTime.of(2020, 6, 14, 18, 30, 0);
 
-        Price price1 = createPrice(startDatePrice1, endDatePrice1, 1, 1, BigDecimal.valueOf(35.50));
-        Price price2 = createPrice(startDatePrice2, endDatePrice2, 2, 1, BigDecimal.valueOf(25.45));
+        Price price1 = createPrice(START_DATE, END_DATE, 1, 1, BigDecimal.valueOf(35.50));
+        Price price2 = createPrice(START_DATE_2, END_DATE_2, 2, 1, BigDecimal.valueOf(25.45));
 
         mockPriceRepository(List.of(price1, price2));
 
@@ -140,10 +134,8 @@ public class PriceServiceTest {
     @Test
     void givenPriceIsApplicable_whenGetApplicablePrice_thenReturnPrice() {
         LocalDateTime applicationDate = getTestApplicationDate();
-        LocalDateTime startDate = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-        LocalDateTime endDate = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
 
-        Price price = createPrice(startDate, endDate, 1, 1, BigDecimal.valueOf(35.50));
+        Price price = createPrice(START_DATE, END_DATE, 1, 1, BigDecimal.valueOf(35.50));
 
         mockPriceRepository(List.of(price));
 
@@ -155,7 +147,7 @@ public class PriceServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenPricesAreEmpty() {
+    void givenNoPricesAvailable_whenGetApplicablePrice_thenThrowPriceNotFoundException() {
         LocalDateTime applicationDate = LocalDateTime.now();
         when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, applicationDate)).thenReturn(Collections.emptyList());
 
@@ -167,39 +159,37 @@ public class PriceServiceTest {
     }
 
     @Test
-    void shouldThrowExceptionWhenNoApplicablePriceFound() {
-        LocalDateTime applicationDate = LocalDateTime.of(2024, 11, 30, 12, 0);
-        LocalDateTime startDate = LocalDateTime.of(2024, 11, 29, 10, 0);
-        LocalDateTime endDate = LocalDateTime.of(2024, 11, 29, 18, 0);
+    void givenPricesWithNoMatchingDate_whenGetApplicablePrice_thenThrowPriceNotFoundException() {
+        LocalDateTime startDate = LocalDateTime.of(2024, 11, 29, 10, 0, 0);
+        LocalDateTime endDate = LocalDateTime.of(2024, 11, 29, 18, 0, 0);
         List<Price> prices = Collections.singletonList(
                 createPrice(startDate, endDate, 1, 1, BigDecimal.valueOf(25.45))
         );
-        when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, applicationDate)).thenReturn(prices);
+        when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE)).thenReturn(prices);
 
         PriceNotFoundException exception = assertThrows(PriceNotFoundException.class,
-                () -> priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, applicationDate));
+                () -> priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE));
         assertEquals(NO_APPLICABLE_PRICE_FOUND, exception.getMessage());
 
-        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, applicationDate);
+        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
     @Test
-    void shouldReturnPriceWithHighestPriority() {
-        LocalDateTime applicationDate = LocalDateTime.of(2024, 11, 30, 12, 0);
-        LocalDateTime startDate = LocalDateTime.of(2024, 11, 30, 10, 0);
-        LocalDateTime endDate = LocalDateTime.of(2024, 11, 30, 20, 0);
+    void givenMultiplePricesWithDifferentPriorities_whenGetApplicablePrice_thenReturnHighestPriorityPrice() {
+        LocalDateTime startDate = LocalDateTime.of(2024, 11, 30, 10, 0, 0);
+        LocalDateTime endDate = LocalDateTime.of(2024, 11, 30, 20, 0, 0);
         List<Price> prices = Arrays.asList(
                 createPrice(startDate, endDate, 1, 0, BigDecimal.valueOf(25.45)),
                 createPrice(startDate, endDate, 2, 1, BigDecimal.valueOf(30.50))
         );
-        when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, applicationDate)).thenReturn(prices);
+        when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE)).thenReturn(prices);
 
-        Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, applicationDate);
+        Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE);
 
         assertNotNull(result);
         assertEquals(2, result.getPriceList());
         assertEquals(BigDecimal.valueOf(30.50), result.getPrice());
 
-        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, applicationDate);
+        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 }

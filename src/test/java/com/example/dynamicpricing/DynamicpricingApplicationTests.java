@@ -24,11 +24,11 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest(classes = DynamicPricingApplication.class)
+@SpringBootTest(classes = DynamicpricingApplication.class)
 @AutoConfigureMockMvc
 @Testcontainers
 @ActiveProfiles("test")
-class DynamicPricingApplicationTests {
+class DynamicpricingApplicationTests {
 
     private static final int MONGO_PORT = 27017;
     public static final String APPLICATION_IS_HEALTHY = "Application is healthy";
@@ -64,8 +64,8 @@ class DynamicPricingApplicationTests {
 
     @Test
     void givenApplication_whenContextLoads_thenRequiredBeansArePresent() {
-        assertNotNull(applicationContext.getBean(DynamicPricingApplication.class),
-                "DynamicPricingApplication bean should be loaded");
+        assertNotNull(applicationContext.getBean(DynamicpricingApplication.class),
+                "DynamicpricingApplication bean should be loaded");
         assertNotNull(applicationContext.getBean(PriceController.class),
                 "PriceController bean should be loaded");
         assertNotNull(applicationContext.getBean(PriceService.class),

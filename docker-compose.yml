@@ -1,0 +1,39 @@
+services:
+  dynamic-pricing-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_DATA_MONGODB_URI=mongodb://mongo:27017/dynamic-pricing
+      - SPRING_DATA_MONGODB_DATABASE=dynamic-pricing
+      - SPRING_APPLICATION_NAME=Dynamic pricing
+    depends_on:
+      - dynamic-pricing-mongo
+    networks:
+      - pricing-network
+
+  dynamic-pricing-mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - pricing-network
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 30s
+      retries: 3
+      start_period: 5s
+      timeout: 10s
+
+networks:
+  pricing-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+    driver: local

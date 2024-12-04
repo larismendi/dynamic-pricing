@@ -19,7 +19,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-public class PriceServiceTest {
+public class PriceServiceImplTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 35455;
@@ -32,9 +32,9 @@ public class PriceServiceTest {
     private static final LocalDateTime END_DATE_2 = LocalDateTime.of(2020, 6, 14, 18, 30, 0);
     private static final LocalDateTime APPLICATION_DATE = LocalDateTime.of(2024, 11, 30, 12, 0, 0);
 
-    private static final Logger logger = LoggerFactory.getLogger(PriceServiceTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(PriceServiceImplTest.class);
 
-    private PriceService priceService;
+    private PriceServiceImpl priceService;
 
     @Mock
     private PriceRepository priceRepository;
@@ -42,7 +42,7 @@ public class PriceServiceTest {
     @BeforeEach
     void setUp() {
         try (AutoCloseable ignored = MockitoAnnotations.openMocks(this)) {
-            priceService = new PriceService(priceRepository);
+            priceService = new PriceServiceImpl(priceRepository);
         } catch (Exception e) {
             logger.error("Error initializing mocks: ", e);
         }

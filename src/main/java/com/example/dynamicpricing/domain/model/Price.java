@@ -19,7 +19,7 @@ public class Price {
     private String currency;
 
     public boolean isApplicable(LocalDateTime applicationDate) {
-        return (applicationDate.isEqual(startDate) || applicationDate.isAfter(startDate)) &&
-                (applicationDate.isEqual(endDate) || applicationDate.isBefore(endDate));
+        return (applicationDate.isEqual(startDate) || applicationDate.isAfter(startDate))
+                && (applicationDate.isEqual(endDate) || applicationDate.isBefore(endDate));
     }
 }

@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<!DOCTYPE suppressions PUBLIC
+        "-//Puppy Crawl//DTD Suppressions 1.1//EN"
+        "https://checkstyle.org/dtds/suppressions_1_1.dtd">
+
+<suppressions>
+    <!-- Ignorar pruebas en los chequeos -->
+    <suppress files=".*Test.java"/>
+    <!-- Ignorar las reglas en una clase específica -->
+    <suppress checks="JavadocMethod" files=".*MyClass.java"/>
+</suppressions>

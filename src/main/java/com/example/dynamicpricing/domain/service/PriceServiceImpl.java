@@ -21,7 +21,7 @@ public class PriceServiceImpl implements PriceService {
     }
 
     public Price getApplicablePrice(int brandId, int productId, LocalDateTime applicationDate) {
-        List<Price> prices = priceRepository.findPrices(productId, brandId, applicationDate);
+        final List<Price> prices = priceRepository.findPrices(productId, brandId, applicationDate);
 
         if (prices.isEmpty()) {
             throw new PriceNotFoundException(PRICE_IS_EMPTY);

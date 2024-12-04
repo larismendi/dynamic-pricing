@@ -1,0 +1,78 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+        "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+        "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name="Checker">
+    <!-- Encoding configuration -->
+    <property name="charset" value="UTF-8"/>
+
+    <!-- Suppressions file (optional) -->
+    <!--    <property name="suppressionsFile" value="config/suppressions.xml"/>-->
+
+    <!-- Tree walker module -->
+    <module name="TreeWalker">
+        <!-- Naming conventions -->
+        <module name="TypeName"/>
+        <module name="MethodName"/>
+        <module name="ParameterName"/>
+        <module name="LocalVariableName"/>
+        <!--        <module name="EmptyLineSeparator"/>-->
+        <module name="Indentation">
+            <property name="basicOffset" value="4"/>
+            <property name="tabWidth" value="4"/>
+        </module>
+        <module name="WhitespaceAfter"/>
+        <module name="WhitespaceAround"/>
+        <module name="NoWhitespaceBefore"/>
+        <module name="OperatorWrap"/>
+        <module name="NeedBraces"/>
+        <module name="RightCurly"/>
+        <module name="LeftCurly"/>
+
+        <!-- Import statements -->
+        <module name="AvoidStarImport"/>
+        <module name="UnusedImports"/>
+        <module name="ImportOrder">
+            <property name="groups" value="com,lombok,org,java,javax"/>
+        </module>
+
+        <!-- Javadoc comments -->
+        <module name="JavadocType"/>
+        <module name="JavadocMethod"/>
+        <!--        <module name="JavadocVariable"/>-->
+        <module name="JavadocParagraph"/>
+        <module name="JavadocStyle"/>
+
+        <!-- Code complexity -->
+        <module name="CyclomaticComplexity">
+            <property name="max" value="10"/>
+        </module>
+        <module name="NPathComplexity">
+            <property name="max" value="200"/>
+        </module>
+        <module name="MethodLength">
+            <property name="max" value="50"/>
+        </module>
+        <module name="ClassFanOutComplexity">
+            <property name="max" value="20"/>
+        </module>
+
+        <!-- Final blocks -->
+        <module name="FinalClass"/>
+        <module name="FinalLocalVariable"/>
+
+        <!-- Other rules -->
+        <module name="BooleanExpressionComplexity">
+            <property name="max" value="3"/>
+        </module>
+        <module name="MagicNumber">
+            <property name="ignoreNumbers" value="0,1,-1"/>
+        </module>
+    </module>
+
+    <!-- Code style rules -->
+    <module name="LineLength">
+        <property name="max" value="120"/>
+    </module>
+</module>

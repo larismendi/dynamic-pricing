@@ -21,7 +21,7 @@ class DataInitializerTest {
     private MongoPriceRepository mongoPriceRepository;
 
     @Test
-    void givenValidJson_whenRun_thenSaveAllPrices() throws Exception {
+    void givenValidJson_whenRun_thenSaveAllPrices() {
         String validJson = "[{\"product_id\": 1, \"brand_id\": 1, \"start_date\": \"2024-12-01T10:00:00Z\", "
                 + "\"end_date\": \"2024-12-31T10:00:00Z\"}]";
         InputStream inputStream = new ByteArrayInputStream(validJson.getBytes(StandardCharsets.UTF_8));

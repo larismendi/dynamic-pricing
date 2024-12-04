@@ -34,7 +34,7 @@
         <module name="AvoidStarImport"/>
         <module name="UnusedImports"/>
         <module name="ImportOrder">
-            <property name="groups" value="com,lombok,org,java,javax"/>
+            <property name="groups" value="com,jakarta,lombok,org,java,javax"/>
         </module>
 
         <!-- Javadoc comments -->

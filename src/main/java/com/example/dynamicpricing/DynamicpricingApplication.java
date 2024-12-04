@@ -3,11 +3,11 @@ package com.example.dynamicpricing;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
-public class DynamicpricingApplication {
+@SpringBootApplication(scanBasePackages = "com.example.dynamicpricing")
+public class DynamicPricingApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DynamicpricingApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(DynamicPricingApplication.class, args);
+    }
 
 }

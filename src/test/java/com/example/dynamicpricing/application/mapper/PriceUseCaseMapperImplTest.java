@@ -3,15 +3,13 @@ package com.example.dynamicpricing.application.mapper;
 import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.springframework.boot.test.context.SpringBootTest;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@SpringBootTest
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 public class PriceUseCaseMapperImplTest {
 
     private static final int BRAND_ID = 1;
@@ -23,8 +21,7 @@ public class PriceUseCaseMapperImplTest {
     private static final String CURRENCY = "USD";
     private static final BigDecimal PRICE = BigDecimal.valueOf(100);
 
-    @InjectMocks
-    private PriceUseCaseMapperImpl priceUseCaseMapper;
+    private final PriceUseCaseMapperImpl priceUseCaseMapper = new PriceUseCaseMapperImpl();
 
     @Test
     public void givenValidInputs_whenCreatingPriceResponse_thenAllFieldsAreSetCorrectly() {

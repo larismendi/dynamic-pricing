@@ -10,21 +10,24 @@ import com.example.dynamicpricing.infrastructure.controller.response.PriceRespon
 import org.springframework.stereotype.Service;
 
 @Service
-public class GetPriceUseCase {
+public class DeterminePriceUseCaseImpl implements DeterminePriceUseCase {
+
+    public static final String ERROR_IN_DETERMINATE_PRICE_USE_CASE_S = "Error in DeterminatePriceUseCase: %s";
 
     private final PriceService priceService;
+
     private final PriceUseCaseMapper priceUseCaseMapper;
 
-    public GetPriceUseCase(
+    public DeterminePriceUseCaseImpl(
             PriceService priceService,
             PriceUseCaseMapper priceUseCaseMapper) {
         this.priceService = priceService;
         this.priceUseCaseMapper = priceUseCaseMapper;
     }
 
-    public PriceResponse getPrice(PriceDto priceDto) {
+    public PriceResponse determinatePrice(PriceDto priceDto) {
         try {
-            Price price = priceService.getApplicablePrice(
+            final Price price = priceService.getApplicablePrice(
                     priceDto.brandId(),
                     priceDto.productId(),
                     priceDto.applicationDate());
@@ -32,7 +35,7 @@ public class GetPriceUseCase {
             return priceUseCaseMapper.toResponse(price);
         } catch (PriceNotFoundException ex) {
             throw new PriceNotAvailableException(
-                    String.format("Error in GetPriceUseCase: %s", ex.getMessage())
+                    String.format(ERROR_IN_DETERMINATE_PRICE_USE_CASE_S, ex.getMessage())
             );
         }
     }

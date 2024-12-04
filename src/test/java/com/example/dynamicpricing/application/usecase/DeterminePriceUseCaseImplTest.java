@@ -7,19 +7,21 @@ import com.example.dynamicpricing.domain.exception.PriceNotFoundException;
 import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.domain.service.PriceService;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-public class GetPriceUseCaseTest {
+public class DeterminePriceUseCaseImplTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 1;
@@ -37,10 +39,24 @@ public class GetPriceUseCaseTest {
     private PriceUseCaseMapper priceUseCaseMapper;
 
     @InjectMocks
-    private GetPriceUseCase getPriceUseCase;
+    private DeterminePriceUseCaseImpl determinePriceUseCase;
+
+    private AutoCloseable closeable;
+
+    @BeforeEach
+    void setUp() {
+        closeable = MockitoAnnotations.openMocks(this);
+    }
+
+    @AfterEach
+    void tearDown() throws Exception {
+        if (closeable != null) {
+            closeable.close();
+        }
+    }
 
     @Test
-    public void givenValidPriceDto_whenGetPrice_thenReturnPriceResponse() {
+    public void givenValidPriceDto_whenDeterminatePrice_thenReturnPriceResponse() {
         PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, LocalDateTime.now());
         Price price = Price.builder()
                 .brandId(BRAND_ID)
@@ -66,7 +82,7 @@ public class GetPriceUseCaseTest {
                 .thenReturn(price);
         when(priceUseCaseMapper.toResponse(price)).thenReturn(expectedPriceResponse);
 
-        PriceResponse actualPriceResponse = getPriceUseCase.getPrice(priceDto);
+        PriceResponse actualPriceResponse = determinePriceUseCase.determinatePrice(priceDto);
 
         assertNotNull(actualPriceResponse);
         assertEquals(expectedPriceResponse.getProductId(), actualPriceResponse.getProductId());
@@ -75,12 +91,12 @@ public class GetPriceUseCaseTest {
     }
 
     @Test
-    public void givenNoPriceFound_whenGetPrice_thenThrowPriceNotAvailableException() {
+    public void givenNoPriceFound_whenDeterminatePrice_thenThrowPriceNotAvailableException() {
         PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, LocalDateTime.now());
 
-        when(priceService.getApplicablePrice(priceDto.brandId(), priceDto.productId(), priceDto.applicationDate()))
+        when(priceService.getApplicablePrice(any(int.class), any(int.class), any(LocalDateTime.class)))
                 .thenThrow(new PriceNotFoundException("Price not found"));
 
-        assertThrows(PriceNotAvailableException.class, () -> getPriceUseCase.getPrice(priceDto));
+        assertThrows(PriceNotAvailableException.class, () -> determinePriceUseCase.determinatePrice(priceDto));
     }
 }

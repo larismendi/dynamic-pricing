@@ -4,11 +4,7 @@ import com.example.dynamicpricing.infrastructure.controller.request.PriceRequest
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
@@ -16,7 +12,6 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.http.*;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -27,11 +22,10 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @Testcontainers
-@ActiveProfiles("test")
-class PriceControllerIntegrationTests {
+@ActiveProfiles("integration")
+class PriceControllerIntegrationTest {
 
     private static final int MONGO_PORT = 27017;
     private static final int BRAND_ID = 1;
@@ -49,12 +43,10 @@ class PriceControllerIntegrationTests {
     private static final String CURRENCY = "EUR";
     private static final String INVALID_PRODUCT_ID_MESSAGE = "Product ID must be positive";
     private static final String INVALID_APPLICATION_DATE_MESSAGE_CONTAINS = "Invalid JSON format: JSON parse error:";
-    public static final boolean REUSABLE = true;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")
-            .withExposedPorts(MONGO_PORT)
-            .withReuse(REUSABLE);
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+            .withExposedPorts(MONGO_PORT);
 
     @Autowired
     private MongoTemplate mongoTemplate;
@@ -67,8 +59,8 @@ class PriceControllerIntegrationTests {
 
     @BeforeAll
     static void setUpBeforeAll() {
-        int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
-        String mongoUri = "mongodb://localhost:" + mongoPort + "/test-database";
+        final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        final String mongoUri = "mongodb://localhost:" + mongoPort + "/integration-database";
 
         System.setProperty("spring.data.mongodb.uri", mongoUri);
 
@@ -85,8 +77,13 @@ class PriceControllerIntegrationTests {
         mongoTemplate.getDb().drop();
     }
 
+    @AfterAll
+    public static void tearDown() {
+        mongoDBContainer.stop();
+    }
+
     void generateData() {
-        PriceEntity priceEntity1 = PriceEntity.builder()
+        final PriceEntity priceEntity1 = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .startDate(START_DATE)
@@ -96,7 +93,7 @@ class PriceControllerIntegrationTests {
                 .price(PRICE.doubleValue())
                 .curr(CURRENCY)
                 .build();
-        PriceEntity priceEntity2 = PriceEntity.builder()
+        final PriceEntity priceEntity2 = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .startDate(START_DATE)
@@ -112,13 +109,13 @@ class PriceControllerIntegrationTests {
 
     @Test
     void givenValidPriceRequest_whenCalculatePrice_thenReturnValidPriceResponse() {
-        PriceRequest priceRequest = PriceRequest.builder()
+        final PriceRequest priceRequest = PriceRequest.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .applicationDate(APPLICATION_DATE)
                 .build();
 
-        ResponseEntity<PriceResponse> response = restTemplate.postForEntity(
+        final ResponseEntity<PriceResponse> response = restTemplate.postForEntity(
                 "/api/price", priceRequest, PriceResponse.class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -130,13 +127,13 @@ class PriceControllerIntegrationTests {
 
     @Test
     void givenInvalidProductIdPriceRequest_whenCalculatePrice_thenReturnBadRequest() {
-        PriceRequest invalidRequest = PriceRequest.builder()
+        final PriceRequest invalidRequest = PriceRequest.builder()
                 .productId(BAD_PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .applicationDate(LocalDateTime.now())
                 .build();
 
-        ResponseEntity<Map<String, String>> response = restTemplate.exchange(
+        final ResponseEntity<Map<String, String>> response = restTemplate.exchange(
                 "/api/price",
                 HttpMethod.POST,
                 new HttpEntity<>(invalidRequest),
@@ -151,7 +148,7 @@ class PriceControllerIntegrationTests {
 
     @Test
     public void givenInvalidApplicationDatePriceRequest_whenCalculatePrice_thenReturnBadRequest() {
-        String validJson = """
+        final String validJson = """
                 {
                     "productId": 101,
                     "brandId": 1,
@@ -159,12 +156,12 @@ class PriceControllerIntegrationTests {
                 }
                 """;
 
-        HttpHeaders headers = new HttpHeaders();
+        final HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(validJson, headers);
+        final HttpEntity<String> requestEntity = new HttpEntity<>(validJson, headers);
 
-        ResponseEntity<String> response = restTemplate.exchange(
+        final ResponseEntity<String> response = restTemplate.exchange(
                 "/api/price",
                 HttpMethod.POST,
                 requestEntity,

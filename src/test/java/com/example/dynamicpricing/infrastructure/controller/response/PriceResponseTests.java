@@ -17,14 +17,14 @@ public class PriceResponseTests {
     private static final String CURRENCY = "USD";
     private static final double PRICE = 99.99;
     private static final double NEGATIVE_PRICE = -99.99;
-    public static final String EMPTY_START_DATE = "";
-    public static final String EMPTY_END_DATE = "";
-    public static final String NULL_START_DATE = null;
-    public static final String NULL_END_DATE = null;
+    private static final String EMPTY_START_DATE = "";
+    private static final String EMPTY_END_DATE = "";
+    private static final String NULL_START_DATE = null;
+    private static final String NULL_END_DATE = null;
 
     @Test
     void givenValidPriceResponse_whenChecked_thenNoErrors() {
-        PriceResponse priceResponse = PriceResponse.builder()
+        final PriceResponse priceResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -48,7 +48,7 @@ public class PriceResponseTests {
 
     @Test
     void givenNullDates_whenChecked_thenValidationFails() {
-        PriceResponse priceResponse = PriceResponse.builder()
+        final PriceResponse priceResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -66,7 +66,7 @@ public class PriceResponseTests {
 
     @Test
     void givenNegativePrice_whenChecked_thenPriceShouldBeInvalid() {
-        PriceResponse priceResponse = PriceResponse.builder()
+        final PriceResponse priceResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -83,7 +83,7 @@ public class PriceResponseTests {
 
     @Test
     void givenEmptyFields_whenChecked_thenDefaultValues() {
-        PriceResponse priceResponse = PriceResponse.builder()
+        final PriceResponse priceResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)

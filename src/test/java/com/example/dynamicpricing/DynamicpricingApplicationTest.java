@@ -27,17 +27,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest(classes = DynamicpricingApplication.class)
 @AutoConfigureMockMvc
 @Testcontainers
-@ActiveProfiles("test")
-class DynamicpricingApplicationTests {
+@ActiveProfiles("integration")
+class DynamicpricingApplicationTest {
 
     private static final int MONGO_PORT = 27017;
-    public static final String APPLICATION_IS_HEALTHY = "Application is healthy";
-    public static final boolean REUSABLE = true;
+    private static final String APPLICATION_IS_HEALTHY = "Application is healthy";
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")
-            .withExposedPorts(MONGO_PORT)
-            .withReuse(REUSABLE);
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+            .withExposedPorts(MONGO_PORT);
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -47,12 +45,17 @@ class DynamicpricingApplicationTests {
 
     @BeforeAll
     static void setUpBeforeAll() {
-        int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
-        String mongoUri = "mongodb://localhost:" + mongoPort + "/test-database";
+        final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        final String mongoUri = "mongodb://localhost:" + mongoPort + "/integration-database";
 
         System.setProperty("spring.data.mongodb.uri", mongoUri);
 
         mongoDBContainer.start();
+    }
+
+    @Test
+    void givenApplication_whenContextLoads_thenNoExceptions() {
+        DynamicpricingApplication.main(new String[]{});
     }
 
     @Test
@@ -82,11 +85,10 @@ class DynamicpricingApplicationTests {
 
     @Test
     void givenContext_whenBeanRequested_thenBeanExists() {
-        String expectedBeanName = "determinePriceUseCaseImpl";
+        final String expectedBeanName = "determinePriceUseCaseImpl";
 
-        boolean beanExists = applicationContext.containsBean(expectedBeanName);
+        final boolean beanExists = applicationContext.containsBean(expectedBeanName);
 
         assertTrue(beanExists, "The bean " + expectedBeanName + " should be available in the context.");
     }
-
 }

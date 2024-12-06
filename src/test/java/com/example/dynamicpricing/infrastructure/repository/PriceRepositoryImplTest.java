@@ -25,7 +25,7 @@ class PriceRepositoryImplTest {
     private static final int BRAND_ID = 5;
     private static final int PRODUCT_ID = 101;
     private static final LocalDateTime APPLICATION_DATE = LocalDateTime.of(2023, 12, 1, 14, 0, 0);
-    public static final String ZONE_ID = "UTC";
+    private static final String ZONE_ID = "UTC";
 
     @Mock
     private MongoPriceRepository mongoPriceRepository;
@@ -52,13 +52,13 @@ class PriceRepositoryImplTest {
 
     @Test
     void givenValidInput_whenFindPrices_thenReturnPriceList() {
-        Instant formattedDate = APPLICATION_DATE.atZone(ZoneId.of(ZONE_ID)).toInstant();
+        final Instant formattedDate = APPLICATION_DATE.atZone(ZoneId.of(ZONE_ID)).toInstant();
 
-        PriceEntity priceEntity1 = mock(PriceEntity.class);
-        PriceEntity priceEntity2 = mock(PriceEntity.class);
+        final PriceEntity priceEntity1 = mock(PriceEntity.class);
+        final PriceEntity priceEntity2 = mock(PriceEntity.class);
 
-        Price domainPrice1 = mock(Price.class);
-        Price domainPrice2 = mock(Price.class);
+        final Price domainPrice1 = mock(Price.class);
+        final Price domainPrice2 = mock(Price.class);
 
         when(mongoPriceRepository.findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 PRODUCT_ID, BRAND_ID, formattedDate, formattedDate))
@@ -67,7 +67,7 @@ class PriceRepositoryImplTest {
         when(priceEntityMapper.toDomain(priceEntity1)).thenReturn(domainPrice1);
         when(priceEntityMapper.toDomain(priceEntity2)).thenReturn(domainPrice2);
 
-        List<Price> result = priceRepositoryImpl.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
+        final List<Price> result = priceRepositoryImpl.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
 
         assertThat(result).containsExactly(domainPrice1, domainPrice2);
         verify(mongoPriceRepository, times(1))
@@ -79,13 +79,13 @@ class PriceRepositoryImplTest {
 
     @Test
     void givenNoPricesFound_whenFindPrices_thenReturnEmptyList() {
-        Instant formattedDate = APPLICATION_DATE.atZone(ZoneId.of(ZONE_ID)).toInstant();
+        final Instant formattedDate = APPLICATION_DATE.atZone(ZoneId.of(ZONE_ID)).toInstant();
 
         when(mongoPriceRepository.findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                 PRODUCT_ID, BRAND_ID, formattedDate, formattedDate))
                 .thenReturn(Collections.emptyList());
 
-        List<Price> result = priceRepositoryImpl.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
+        final List<Price> result = priceRepositoryImpl.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
 
         assertThat(result).isEmpty();
         verify(mongoPriceRepository, times(1))

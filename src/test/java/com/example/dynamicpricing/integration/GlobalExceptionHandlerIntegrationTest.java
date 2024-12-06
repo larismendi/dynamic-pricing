@@ -20,33 +20,31 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("integration")
 class GlobalExceptionHandlerIntegrationTest {
 
-    public static final int MONGO_PORT = 27017;
-    public static final boolean REUSABLE = true;
+    private static final int MONGO_PORT = 27017;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")
-            .withExposedPorts(MONGO_PORT)
-            .withReuse(REUSABLE);
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+            .withExposedPorts(MONGO_PORT);
+
+    @Autowired
+    private MockMvc mockMvc;
 
     @BeforeAll
     static void setUp() {
-        int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
-        String mongoUri = "mongodb://localhost:" + mongoPort + "/test-database";
+        final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        final String mongoUri = "mongodb://localhost:" + mongoPort + "/integration-database";
 
         System.setProperty("spring.data.mongodb.uri", mongoUri);
 
         mongoDBContainer.start();
     }
 
-    @Autowired
-    private MockMvc mockMvc;
-
     @Test
     void givenInvalidJsonFormat_whenParsingFails_thenReturnBadRequestWithError() throws Exception {
-        String invalidRequestJson = """
+        final String invalidRequestJson = """
                 {
                     "productId": -1,
                     "brandId": null,
@@ -54,7 +52,7 @@ class GlobalExceptionHandlerIntegrationTest {
                 }
                 """;
 
-        ResultActions result = mockMvc.perform(post("/api/price")
+        final ResultActions result = mockMvc.perform(post("/api/price")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidRequestJson));
 
@@ -64,7 +62,7 @@ class GlobalExceptionHandlerIntegrationTest {
 
     @Test
     void givenInvalidPriceRequest_whenCalculatePrice_thenReturnsBadRequest() throws Exception {
-        String invalidRequest = """
+        final String invalidRequest = """
                     {
                         "productId": -1,
                         "brandId": 0,

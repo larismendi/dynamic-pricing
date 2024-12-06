@@ -2,10 +2,13 @@ package com.example.dynamicpricing.integration;
 
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -22,14 +25,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
 @Testcontainers
-@ActiveProfiles("test")
+@ActiveProfiles("integration")
 public class MongoPriceRepositoryIntegrationTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 1;
-    private static final LocalDateTime START_DATE = LocalDateTime.now().minusSeconds(10000)
+    private static final int SECONDS_TO_ADD = 10000;
+    private static final LocalDateTime START_DATE = LocalDateTime.now().minusSeconds(SECONDS_TO_ADD)
             .truncatedTo(ChronoUnit.SECONDS);
-    private static final LocalDateTime END_DATE = LocalDateTime.now().plusSeconds(10000)
+    private static final LocalDateTime END_DATE = LocalDateTime.now().plusSeconds(SECONDS_TO_ADD)
             .truncatedTo(ChronoUnit.SECONDS);
     private static final LocalDateTime APPLICATION_DATE = LocalDateTime.now()
             .truncatedTo(ChronoUnit.SECONDS);
@@ -39,36 +43,48 @@ public class MongoPriceRepositoryIntegrationTest {
     private static final String CURRENCY = "USD";
     private static final int BRAND_ID_2 = 2;
     private static final int PRODUCT_ID_2 = 2;
-    private static final LocalDateTime START_DATE_2 = LocalDateTime.now().minusSeconds(5000)
+    public static final int SECONDS = 5000;
+    private static final LocalDateTime START_DATE_2 = LocalDateTime.now().minusSeconds(SECONDS)
             .truncatedTo(ChronoUnit.SECONDS);
-    private static final LocalDateTime END_DATE_2 = LocalDateTime.now().plusSeconds(5000)
+    private static final LocalDateTime END_DATE_2 = LocalDateTime.now().plusSeconds(SECONDS)
             .truncatedTo(ChronoUnit.SECONDS);
     private static final int PRIORITY_2 = 2;
     private static final BigDecimal PRICE_2 = BigDecimal.valueOf(120);
-    public static final int MONGO_PORT = 27017;
-    public static final boolean REUSABLE = true;
+    private static final int MONGO_PORT = 27017;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")
-            .withExposedPorts(MONGO_PORT)
-            .withReuse(REUSABLE);
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+            .withExposedPorts(MONGO_PORT);
 
     @Autowired
     private MongoPriceRepository mongoPriceRepository;
 
+    @Autowired
+    private MongoTemplate mongoTemplate;
+
     @BeforeAll
     static void setUp() {
-        int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
-        String mongoUri = "mongodb://localhost:" + mongoPort + "/test-database";
+        final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        final String mongoUri = "mongodb://localhost:" + mongoPort + "/integration-database";
 
         System.setProperty("spring.data.mongodb.uri", mongoUri);
 
         mongoDBContainer.start();
     }
 
+    @AfterEach
+    void cleanDatabase() {
+        mongoTemplate.getDb().drop();
+    }
+
+    @AfterAll
+    public static void tearDown() {
+        mongoDBContainer.stop();
+    }
+
     @Test
-    void givenValidPriceEntities_whenFindByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual_thenReturnMatchingEntities() {
-        PriceEntity priceEntity1 = PriceEntity.builder()
+    void givenValidPriceEntities_whenFindByCriteria_thenReturnMatchingEntities() {
+        final PriceEntity priceEntity1 = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .startDate(START_DATE)
@@ -78,7 +94,7 @@ public class MongoPriceRepositoryIntegrationTest {
                 .price(PRICE.doubleValue())
                 .curr(CURRENCY)
                 .build();
-        PriceEntity priceEntity2 = PriceEntity.builder()
+        final PriceEntity priceEntity2 = PriceEntity.builder()
                 .productId(PRODUCT_ID_2)
                 .brandId(BRAND_ID_2)
                 .startDate(START_DATE_2)
@@ -91,23 +107,24 @@ public class MongoPriceRepositoryIntegrationTest {
         mongoPriceRepository.save(priceEntity1);
         mongoPriceRepository.save(priceEntity2);
 
-        Instant applicationDate = APPLICATION_DATE.atZone(ZoneId.of("UTC")).toInstant()
+        final Instant applicationDate = APPLICATION_DATE.atZone(ZoneId.of("UTC")).toInstant()
                 .truncatedTo(ChronoUnit.MINUTES);
 
-        List<PriceEntity> result = mongoPriceRepository
+        final List<PriceEntity> result = mongoPriceRepository
                 .findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         PRODUCT_ID, BRAND_ID, applicationDate, applicationDate);
 
         assertEquals(1, result.size(), "Expected 1 matching price entity");
-        assertEquals(priceEntity1.getProductId(), result.get(0).getProductId(), "Expected the correct price entity to be returned");
+        assertEquals(priceEntity1.getProductId(), result.get(0).getProductId(),
+                "Expected the correct price entity to be returned");
     }
 
     @Test
-    void givenNoMatchingPriceEntities_whenFindByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual_thenReturnEmptyList() {
-        Instant startDate = Instant.now().minusSeconds(10000);
-        Instant endDate = Instant.now().plusSeconds(10000);
+    void givenNoMatchingPriceEntities_whenFindByCriteria_thenReturnEmptyList() {
+        final Instant startDate = Instant.now().minusSeconds(SECONDS_TO_ADD);
+        final Instant endDate = Instant.now().plusSeconds(SECONDS_TO_ADD);
 
-        List<PriceEntity> result = mongoPriceRepository
+        final List<PriceEntity> result = mongoPriceRepository
                 .findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
                         PRODUCT_ID, BRAND_ID, startDate, endDate);
 

@@ -12,13 +12,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 class HealthControllerTest {
 
-    public static final String APPLICATION_IS_HEALTHY = "Application is healthy";
+    private static final String APPLICATION_IS_HEALTHY = "Application is healthy";
     
     private MockMvc mockMvc;
 
     @BeforeEach
     void setUp() {
-        HealthController healthController = new HealthController();
+        final HealthController healthController = new HealthController();
         mockMvc = MockMvcBuilders.standaloneSetup(healthController).build();
     }
 

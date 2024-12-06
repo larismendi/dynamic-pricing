@@ -9,19 +9,19 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class PriceEntityTest {
 
-    public static final String CURR = "USD";
-    public static final int BRAND_ID = 1;
-    public static final int PRIORITY = 1;
-    public static final int PRODUCT_ID = 2001;
-    public static final int PRICE_LIST = 101;
-    public static final double PRICE = 99.99;
+    private static final String CURR = "USD";
+    private static final int BRAND_ID = 1;
+    private static final int PRIORITY = 1;
+    private static final int PRODUCT_ID = 2001;
+    private static final int PRICE_LIST = 101;
+    private static final double PRICE = 99.99;
 
     @Test
     void givenPriceEntity_whenBuilt_thenAllFieldsAreSetCorrectly() {
-        LocalDateTime startDate = LocalDateTime.now();
-        LocalDateTime endDate = startDate.plusDays(1);
+        final LocalDateTime startDate = LocalDateTime.now();
+        final LocalDateTime endDate = startDate.plusDays(1);
 
-        PriceEntity entity = PriceEntity.builder()
+        final PriceEntity entity = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .startDate(startDate)
@@ -46,9 +46,9 @@ class PriceEntityTest {
 
     @Test
     void givenPriceEntityAnnotation_whenChecked_thenDocumentAnnotationExists() {
-        Class<PriceEntity> clazz = PriceEntity.class;
+        final Class<PriceEntity> clazz = PriceEntity.class;
 
-        Document documentAnnotation = clazz.getAnnotation(Document.class);
+        final Document documentAnnotation = clazz.getAnnotation(Document.class);
 
         assertNotNull(documentAnnotation, "Document annotation should be present");
         assertEquals("prices", documentAnnotation.collection(), "Collection name should be 'prices'");

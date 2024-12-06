@@ -13,4 +13,4 @@ COPY wait-for-it.sh /app/wait-for-it.sh
 RUN chmod +x /app/wait-for-it.sh
 
 EXPOSE 8080
-ENTRYPOINT ["/app/wait-for-it.sh", "mongo:27017", "--", "java", "-jar", "/app/app.jar", "--debug"]
+ENTRYPOINT ["/app/wait-for-it.sh", "mongo:27017", "--", "java", "-jar", "/app/app.jar"]

@@ -11,26 +11,35 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class InputStreamSupplierConfigTest {
 
+    private static final String NON_EXISTENT_PATH_INITIAL_DATA_JSON = "non/existent/path/initial_data.json";
+    private static final String DB_MIGRATION_INITIAL_DATA_JSON = "db/migration/initial_data.json";
+
+    void setFilePath(String newFilePath) {
+        System.setProperty("data.file.path", newFilePath);
+    }
+
     @Test
     void givenValidFile_whenSupplierCalled_thenReturnsInputStream() {
-        System.setProperty("data.file.path", "db/migration/initial_data.json");
+        setFilePath(DB_MIGRATION_INITIAL_DATA_JSON);
 
-        ApplicationContext context = new AnnotationConfigApplicationContext(InputStreamSupplierConfig.class);
+        final ApplicationContext context = new AnnotationConfigApplicationContext(InputStreamSupplierConfig.class);
 
-        Supplier<InputStream> inputStreamSupplier = context.getBean(Supplier.class);
+        final Supplier<InputStream> inputStreamSupplier = context.getBean(Supplier.class);
 
-        InputStream inputStream = inputStreamSupplier.get();
+        final InputStream inputStream = inputStreamSupplier.get();
         assertNotNull(inputStream, "InputStream should not be null");
     }
 
     @Test
     void givenInvalidFile_whenSupplierCalled_thenThrowsFileNotFoundException() {
-        System.setProperty("data.file.path", "non/existent/path/initial_data.json");
+        setFilePath(NON_EXISTENT_PATH_INITIAL_DATA_JSON);
 
-        ApplicationContext context = new AnnotationConfigApplicationContext(InputStreamSupplierConfig.class);
+        final ApplicationContext context = new AnnotationConfigApplicationContext(InputStreamSupplierConfig.class);
 
-        Supplier<InputStream> inputStreamSupplier = context.getBean(Supplier.class);
+        final Supplier<InputStream> inputStreamSupplier = context.getBean(Supplier.class);
 
         assertThrows(RuntimeException.class, inputStreamSupplier::get);
+
+        setFilePath(DB_MIGRATION_INITIAL_DATA_JSON);
     }
 }

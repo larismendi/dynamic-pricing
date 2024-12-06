@@ -20,25 +20,23 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @Testcontainers
 @AutoConfigureMockMvc
-@ActiveProfiles("test")
+@ActiveProfiles("integration")
 public class HealthControllerIntegrationTest {
 
     private static final int MONGO_PORT = 27017;
     private static final String APPLICATION_IS_HEALTHY = "Application is healthy";
-    public static final boolean REUSABLE = true;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:4.4")
-            .withExposedPorts(MONGO_PORT)
-            .withReuse(REUSABLE);
+    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+            .withExposedPorts(MONGO_PORT);
 
     @Autowired
     private MockMvc mockMvc;
 
     @BeforeAll
     static void setUp() {
-        int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
-        String mongoUri = "mongodb://localhost:" + mongoPort + "/test-database";
+        final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
+        final String mongoUri = "mongodb://localhost:" + mongoPort + "/integration-database";
 
         System.setProperty("spring.data.mongodb.uri", mongoUri);
 
@@ -47,9 +45,9 @@ public class HealthControllerIntegrationTest {
 
     @Test
     void givenApplication_whenContextLoads_thenHealthCheckWorks() throws Exception {
-        String healthUrl = "/health";
+        final String healthUrl = "/health";
 
-        MvcResult result = mockMvc.perform(get(healthUrl))
+        final MvcResult result = mockMvc.perform(get(healthUrl))
                 .andExpect(status().isOk())
                 .andExpect(content().string(APPLICATION_IS_HEALTHY))
                 .andReturn();

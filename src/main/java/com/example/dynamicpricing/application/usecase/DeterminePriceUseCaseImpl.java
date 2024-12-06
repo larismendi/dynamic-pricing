@@ -7,12 +7,17 @@ import com.example.dynamicpricing.domain.exception.PriceNotFoundException;
 import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.domain.service.PriceService;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 @Service
 public class DeterminePriceUseCaseImpl implements DeterminePriceUseCase {
 
-    public static final String ERROR_IN_DETERMINATE_PRICE_USE_CASE_S = "Error in DeterminatePriceUseCase: %s";
+    private static final String ERROR_IN_DETERMINATE_PRICE_USE_CASE_S = "Error in DeterminatePriceUseCase: %s";
+    private static final Logger logger = LoggerFactory.getLogger(DeterminePriceUseCaseImpl.class);
+    private static final String FOUND_PRICE_DATA = "Found price data: {}";
+    private static final String ERROR_IN_DETERMINATE_PRICE_USE_CASE = "Error in DeterminatePriceUseCase: {}";
 
     private final PriceService priceService;
 
@@ -32,8 +37,10 @@ public class DeterminePriceUseCaseImpl implements DeterminePriceUseCase {
                     priceDto.productId(),
                     priceDto.applicationDate());
 
+            logger.info(FOUND_PRICE_DATA, price);
             return priceUseCaseMapper.toResponse(price);
         } catch (PriceNotFoundException ex) {
+            logger.warn(ERROR_IN_DETERMINATE_PRICE_USE_CASE, ex.getMessage(), ex);
             throw new PriceNotAvailableException(
                     String.format(ERROR_IN_DETERMINATE_PRICE_USE_CASE_S, ex.getMessage())
             );

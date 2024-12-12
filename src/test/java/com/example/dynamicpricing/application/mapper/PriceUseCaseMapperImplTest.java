@@ -5,27 +5,29 @@ import com.example.dynamicpricing.infrastructure.controller.response.PriceRespon
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class PriceUseCaseMapperImplTest {
+class PriceUseCaseMapperImplTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 1;
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
+    private static final ZonedDateTime START_DATE = ZonedDateTime.of(2020, 6, 14, 0, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime END_DATE = ZonedDateTime.of(2020, 6, 14, 23, 59, 59, 0, ZoneId.of("UTC"));
     private static final int PRICE_LIST = 1;
     private static final int PRIORITY = 2;
     private static final String CURRENCY = "USD";
     private static final BigDecimal PRICE = BigDecimal.valueOf(100);
+    private static final double DELTA = 0.01;
 
     private final PriceUseCaseMapperImpl priceUseCaseMapper = new PriceUseCaseMapperImpl();
 
     @Test
-    public void givenValidInputs_whenCreatingPriceResponse_thenAllFieldsAreSetCorrectly() {
-        Price mockPrice = Price.builder()
+    void givenValidInputs_whenCreatingPriceResponse_thenAllFieldsAreSetCorrectly() {
+        final Price mockPrice = Price.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -36,7 +38,7 @@ public class PriceUseCaseMapperImplTest {
                 .currency(CURRENCY)
                 .build();
 
-        PriceResponse response = priceUseCaseMapper.toResponse(mockPrice);
+        final PriceResponse response = priceUseCaseMapper.toResponse(mockPrice);
 
         assertNotNull(response);
         assertEquals(PRODUCT_ID, response.getProductId());
@@ -44,7 +46,7 @@ public class PriceUseCaseMapperImplTest {
         assertEquals(PRICE_LIST, response.getPriceList());
         assertEquals(START_DATE.toString(), response.getStartDate());
         assertEquals(END_DATE.toString(), response.getEndDate());
-        assertEquals(PRICE.doubleValue(), response.getPrice(), 0.01);
+        assertEquals(PRICE.doubleValue(), response.getPrice(), DELTA);
         assertEquals(CURRENCY, response.getCurrency());
     }
 }

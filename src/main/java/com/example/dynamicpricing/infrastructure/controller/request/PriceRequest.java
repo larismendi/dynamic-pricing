@@ -5,7 +5,7 @@ import jakarta.validation.constraints.Positive;
 import lombok.Builder;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 @Data
 @Builder
@@ -17,5 +17,5 @@ public class PriceRequest {
     private int brandId;
 
     @NotNull(message = "Application date must not be null")
-    private LocalDateTime applicationDate;
+    private ZonedDateTime applicationDate;
 }

@@ -2,9 +2,10 @@ package com.example.dynamicpricing.domain.exception;
 
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-public class PriceNotFoundExceptionTest {
+class PriceNotFoundExceptionTest {
 
     private static final String EXPECTED_MESSAGE = "No price found for the given parameters.";
 

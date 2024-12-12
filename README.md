@@ -88,7 +88,7 @@ To run this project, you need:
 3. If you're using Docker for MongoDB, you can start a container with the following command:
 
     ```bash
-    docker run --name mongo -d -p 27017:27017 mongo:4.4
+    docker run --name mongo -d -p 27017:27017 mongo:6.0
     ```
 
 4. To run the application with the `test` profile:
@@ -190,7 +190,7 @@ This provides a detailed view of all available endpoints, their parameters, and 
 {
   "productId": 35455,
   "brandId": 1,
-  "applicationDate": "2020-06-14T22:00:00"
+  "applicationDate": "2020-06-14T22:00:00Z"
 }
 ```
 
@@ -201,8 +201,8 @@ This provides a detailed view of all available endpoints, their parameters, and 
   "productId": 35455,
   "brandId": 1,
   "priceList": 1,
-  "startDate": "2020-06-14T00:00",
-  "endDate": "2020-12-31T23:59:59",
+  "startDate": "2020-06-14T00:00Z",
+  "endDate": "2020-12-31T23:59:59Z",
   "price": 35.5,
   "currency": "EUR"
 }

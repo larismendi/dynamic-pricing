@@ -21,13 +21,13 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Testcontainers
 @AutoConfigureMockMvc
 @ActiveProfiles("integration")
-public class HealthControllerIntegrationTest {
+class HealthControllerIntegrationTest {
 
     private static final int MONGO_PORT = 27017;
     private static final String APPLICATION_IS_HEALTHY = "Application is healthy";
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @Autowired

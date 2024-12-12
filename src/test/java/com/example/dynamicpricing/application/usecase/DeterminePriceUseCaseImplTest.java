@@ -15,18 +15,19 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 
-public class DeterminePriceUseCaseImplTest {
+class DeterminePriceUseCaseImplTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 1;
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2020, 6, 14, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2020, 6, 14, 23, 59, 59);
+    private static final ZonedDateTime START_DATE = ZonedDateTime.of(2020, 6, 14, 0, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime END_DATE = ZonedDateTime.of(2020, 6, 14, 23, 59, 59, 0, ZoneId.of("UTC"));
     private static final int PRICE_LIST = 1;
     private static final int PRIORITY = 2;
     private static final String CURRENCY = "USD";
@@ -56,9 +57,9 @@ public class DeterminePriceUseCaseImplTest {
     }
 
     @Test
-    public void givenValidPriceDto_whenDeterminatePrice_thenReturnPriceResponse() {
-        PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, LocalDateTime.now());
-        Price price = Price.builder()
+    void givenValidPriceDto_whenDeterminatePrice_thenReturnPriceResponse() {
+        final PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, ZonedDateTime.now());
+        final Price price = Price.builder()
                 .brandId(BRAND_ID)
                 .productId(PRODUCT_ID)
                 .startDate(START_DATE)
@@ -68,7 +69,7 @@ public class DeterminePriceUseCaseImplTest {
                 .price(PRICE)
                 .currency(CURRENCY)
                 .build();
-        PriceResponse expectedPriceResponse = PriceResponse.builder()
+        final PriceResponse expectedPriceResponse = PriceResponse.builder()
                 .brandId(BRAND_ID)
                 .productId(PRODUCT_ID)
                 .startDate(START_DATE.toString())
@@ -82,7 +83,7 @@ public class DeterminePriceUseCaseImplTest {
                 .thenReturn(price);
         when(priceUseCaseMapper.toResponse(price)).thenReturn(expectedPriceResponse);
 
-        PriceResponse actualPriceResponse = determinePriceUseCase.determinatePrice(priceDto);
+        final PriceResponse actualPriceResponse = determinePriceUseCase.determinatePrice(priceDto);
 
         assertNotNull(actualPriceResponse);
         assertEquals(expectedPriceResponse.getProductId(), actualPriceResponse.getProductId());
@@ -91,10 +92,10 @@ public class DeterminePriceUseCaseImplTest {
     }
 
     @Test
-    public void givenNoPriceFound_whenDeterminatePrice_thenThrowPriceNotAvailableException() {
-        PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, LocalDateTime.now());
+    void givenNoPriceFound_whenDeterminatePrice_thenThrowPriceNotAvailableException() {
+        final PriceDto priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, ZonedDateTime.now());
 
-        when(priceService.getApplicablePrice(any(int.class), any(int.class), any(LocalDateTime.class)))
+        when(priceService.getApplicablePrice(any(int.class), any(int.class), any(ZonedDateTime.class)))
                 .thenThrow(new PriceNotFoundException("Price not found"));
 
         assertThrows(PriceNotAvailableException.class, () -> determinePriceUseCase.determinatePrice(priceDto));

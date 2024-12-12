@@ -26,7 +26,7 @@ class GlobalExceptionHandlerIntegrationTest {
     private static final int MONGO_PORT = 27017;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @Autowired
@@ -66,7 +66,7 @@ class GlobalExceptionHandlerIntegrationTest {
                     {
                         "productId": -1,
                         "brandId": 0,
-                        "applicationDate": "2024-12-02T10:30:00"
+                        "applicationDate": "2024-12-02T10:30:00Z"
                     }
                 """;
 

@@ -8,7 +8,8 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import java.util.TimeZone;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 class JacksonConfigTest {
 
@@ -21,14 +22,14 @@ class JacksonConfigTest {
 
     @Test
     void givenJacksonConfig_whenObjectMapperBeanCreated_thenTimeZoneIsUTC() {
-        ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
+        final ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
 
         assertEquals(TimeZone.getTimeZone("UTC"), objectMapper.getSerializationConfig().getTimeZone());
     }
 
     @Test
     void givenJacksonConfig_whenObjectMapperBeanCreated_thenWriteDatesAsTimestampsIsDisabled() {
-        ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
+        final ObjectMapper objectMapper = context.getBean(ObjectMapper.class);
 
         assertFalse(objectMapper.isEnabled(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS));
     }

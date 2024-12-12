@@ -3,7 +3,8 @@ package com.example.dynamicpricing.infrastructure.entity;
 import org.junit.jupiter.api.Test;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.time.LocalDateTime;
+import java.time.Duration;
+import java.time.Instant;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -18,8 +19,8 @@ class PriceEntityTest {
 
     @Test
     void givenPriceEntity_whenBuilt_thenAllFieldsAreSetCorrectly() {
-        final LocalDateTime startDate = LocalDateTime.now();
-        final LocalDateTime endDate = startDate.plusDays(1);
+        final Instant startDate = Instant.now();
+        final Instant endDate = startDate.plus(Duration.ofDays(1));
 
         final PriceEntity entity = PriceEntity.builder()
                 .productId(PRODUCT_ID)

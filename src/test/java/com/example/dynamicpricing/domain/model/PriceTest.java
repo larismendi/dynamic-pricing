@@ -1,8 +1,10 @@
 package com.example.dynamicpricing.domain.model;
 
 import org.junit.jupiter.api.Test;
+
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,8 +16,8 @@ class PriceTest {
     private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
+    private static final ZonedDateTime START_DATE = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime END_DATE = ZonedDateTime.of(2023, 12, 1, 23, 59, 59, 0, ZoneId.of("UTC"));
 
     private static Price price;
 
@@ -35,7 +37,7 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsWithinRange() {
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 11, 15, 12, 0);
+        final ZonedDateTime applicationDate = ZonedDateTime.of(2023, 11, 15, 12, 0, 0, 0, ZoneId.of("UTC"));
 
         getPriceBuilder();
 
@@ -44,7 +46,7 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsEqualToStartDate() {
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
+        final ZonedDateTime applicationDate = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZoneId.of("UTC"));
 
         getPriceBuilder();
 
@@ -53,7 +55,7 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsEqualToEndDate() {
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
+        final ZonedDateTime applicationDate = ZonedDateTime.of(2023, 12, 1, 23, 59, 59, 0, ZoneId.of("UTC"));
 
         getPriceBuilder();
 
@@ -62,7 +64,7 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsBeforeStartDate() {
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 10, 31, 23, 59, 59);
+        final ZonedDateTime applicationDate = ZonedDateTime.of(2023, 10, 31, 23, 59, 59, 0, ZoneId.of("UTC"));
 
         getPriceBuilder();
 
@@ -71,7 +73,7 @@ class PriceTest {
 
     @Test
     void testIsApplicableWhenDateIsAfterEndDate() {
-        LocalDateTime applicationDate = LocalDateTime.of(2023, 12, 2, 0, 0, 0);
+        final ZonedDateTime applicationDate = ZonedDateTime.of(2023, 12, 2, 0, 0, 0, 0, ZoneId.of("UTC"));
 
         getPriceBuilder();
 

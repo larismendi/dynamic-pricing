@@ -17,7 +17,9 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -31,9 +33,10 @@ class PriceControllerIntegrationTest {
     private static final int BRAND_ID = 1;
     private static final int BAD_PRODUCT_ID = -1;
     private static final int PRODUCT_ID = 101;
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2024, 12, 2, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2024, 12, 2, 23, 59);
-    private static final LocalDateTime APPLICATION_DATE = LocalDateTime.of(2024, 12, 2, 12, 0);
+    private static final ZoneId ZONE_ID = ZoneId.of("UTC");
+    private static final Instant START_DATE = ZonedDateTime.of(2024, 12, 2, 0, 0, 0, 0, ZONE_ID).toInstant();
+    private static final Instant END_DATE = ZonedDateTime.of(2024, 12, 2, 23, 59, 59, 0, ZONE_ID).toInstant();
+    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.of(2024, 12, 2, 12, 0, 0, 0, ZONE_ID);
     private static final int PRICE_LIST = 1;
     private static final int PRICE_LIST_2 = 2;
     private static final int PRIORITY = 1;
@@ -45,7 +48,7 @@ class PriceControllerIntegrationTest {
     private static final String INVALID_APPLICATION_DATE_MESSAGE_CONTAINS = "Invalid JSON format: JSON parse error:";
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @Autowired
@@ -78,7 +81,7 @@ class PriceControllerIntegrationTest {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         mongoDBContainer.stop();
     }
 
@@ -130,7 +133,7 @@ class PriceControllerIntegrationTest {
         final PriceRequest invalidRequest = PriceRequest.builder()
                 .productId(BAD_PRODUCT_ID)
                 .brandId(BRAND_ID)
-                .applicationDate(LocalDateTime.now())
+                .applicationDate(ZonedDateTime.now())
                 .build();
 
         final ResponseEntity<Map<String, String>> response = restTemplate.exchange(
@@ -147,7 +150,7 @@ class PriceControllerIntegrationTest {
     }
 
     @Test
-    public void givenInvalidApplicationDatePriceRequest_whenCalculatePrice_thenReturnBadRequest() {
+    void givenInvalidApplicationDatePriceRequest_whenCalculatePrice_thenReturnBadRequest() {
         final String validJson = """
                 {
                     "productId": 101,

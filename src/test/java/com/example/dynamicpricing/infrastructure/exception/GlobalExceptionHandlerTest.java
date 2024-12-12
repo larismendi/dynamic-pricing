@@ -40,9 +40,9 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void givenPriceNotAvailableException_whenHandlePriceNotAvailable_thenReturnNotFoundResponse() {
-        PriceNotAvailableException exception = new PriceNotAvailableException(PRICE_NOT_FOUND);
+        final PriceNotAvailableException exception = new PriceNotAvailableException(PRICE_NOT_FOUND);
 
-        ResponseEntity<ApiErrorResponse> response = globalExceptionHandler.handleProductNotFound(exception);
+        final ResponseEntity<ApiErrorResponse> response = globalExceptionHandler.handleProductNotFound(exception);
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertEquals(PRICE_NOT_FOUND, Objects.requireNonNull(response.getBody()).getMessage());
@@ -51,11 +51,11 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void givenMethodArgumentNotValidException_whenHandleValidationExceptions_thenReturnBadRequestResponse() {
-        FieldError fieldError = new FieldError("priceRequest", "price", DEFAULT_MESSAGE);
+        final FieldError fieldError = new FieldError("priceRequest", "price", DEFAULT_MESSAGE);
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
         when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
 
-        ResponseEntity<Map<String, String>> response = globalExceptionHandler
+        final ResponseEntity<Map<String, String>> response = globalExceptionHandler
                 .handleValidationExceptions(methodArgumentNotValidException);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -65,9 +65,10 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void givenHttpMessageNotReadableException_whenHandleJsonParseExceptions_thenReturnBadRequestResponse() {
-        HttpMessageNotReadableException exception = new HttpMessageNotReadableException(NOT_READABLE_MESSAGE);
+        final HttpMessageNotReadableException exception = new HttpMessageNotReadableException(NOT_READABLE_MESSAGE);
 
-        ResponseEntity<Map<String, String>> response = globalExceptionHandler.handleJsonParseExceptions(exception);
+        final ResponseEntity<Map<String, String>> response =
+                globalExceptionHandler.handleJsonParseExceptions(exception);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertTrue(Objects.requireNonNull(response.getBody()).containsKey("error"));

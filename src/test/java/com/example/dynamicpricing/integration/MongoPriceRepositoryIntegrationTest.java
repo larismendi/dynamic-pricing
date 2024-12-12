@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MongoDBContainer;
@@ -16,9 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -26,34 +26,30 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @Testcontainers
 @ActiveProfiles("integration")
-public class MongoPriceRepositoryIntegrationTest {
+class MongoPriceRepositoryIntegrationTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 1;
     private static final int SECONDS_TO_ADD = 10000;
-    private static final LocalDateTime START_DATE = LocalDateTime.now().minusSeconds(SECONDS_TO_ADD)
-            .truncatedTo(ChronoUnit.SECONDS);
-    private static final LocalDateTime END_DATE = LocalDateTime.now().plusSeconds(SECONDS_TO_ADD)
-            .truncatedTo(ChronoUnit.SECONDS);
-    private static final LocalDateTime APPLICATION_DATE = LocalDateTime.now()
-            .truncatedTo(ChronoUnit.SECONDS);
+    private static final Instant START_DATE = ZonedDateTime.now().minusSeconds(SECONDS_TO_ADD).toInstant();
+    private static final Instant END_DATE = ZonedDateTime.now().plusSeconds(SECONDS_TO_ADD).toInstant();
+    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.now();
     private static final int PRICE_LIST = 1;
     private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(100);
     private static final String CURRENCY = "USD";
     private static final int BRAND_ID_2 = 2;
     private static final int PRODUCT_ID_2 = 2;
-    public static final int SECONDS = 5000;
-    private static final LocalDateTime START_DATE_2 = LocalDateTime.now().minusSeconds(SECONDS)
-            .truncatedTo(ChronoUnit.SECONDS);
-    private static final LocalDateTime END_DATE_2 = LocalDateTime.now().plusSeconds(SECONDS)
-            .truncatedTo(ChronoUnit.SECONDS);
+    private static final int SECONDS = 5000;
+    private static final Instant START_DATE_2 = ZonedDateTime.now().minusSeconds(SECONDS).toInstant();
+    private static final Instant END_DATE_2 = ZonedDateTime.now().plusSeconds(SECONDS).toInstant();
     private static final int PRIORITY_2 = 2;
     private static final BigDecimal PRICE_2 = BigDecimal.valueOf(120);
     private static final int MONGO_PORT = 27017;
+    private static final PageRequest PAGE_REQUEST = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @Autowired
@@ -78,7 +74,7 @@ public class MongoPriceRepositoryIntegrationTest {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         mongoDBContainer.stop();
     }
 
@@ -107,12 +103,11 @@ public class MongoPriceRepositoryIntegrationTest {
         mongoPriceRepository.save(priceEntity1);
         mongoPriceRepository.save(priceEntity2);
 
-        final Instant applicationDate = APPLICATION_DATE.atZone(ZoneId.of("UTC")).toInstant()
-                .truncatedTo(ChronoUnit.MINUTES);
+        final Instant applicationDate = APPLICATION_DATE.toInstant();
 
         final List<PriceEntity> result = mongoPriceRepository
-                .findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        PRODUCT_ID, BRAND_ID, applicationDate, applicationDate);
+                .findTopByProductIdAndBrandIdAndApplicationDate(
+                        PRODUCT_ID, BRAND_ID, applicationDate, PAGE_REQUEST);
 
         assertEquals(1, result.size(), "Expected 1 matching price entity");
         assertEquals(priceEntity1.getProductId(), result.get(0).getProductId(),
@@ -122,11 +117,10 @@ public class MongoPriceRepositoryIntegrationTest {
     @Test
     void givenNoMatchingPriceEntities_whenFindByCriteria_thenReturnEmptyList() {
         final Instant startDate = Instant.now().minusSeconds(SECONDS_TO_ADD);
-        final Instant endDate = Instant.now().plusSeconds(SECONDS_TO_ADD);
 
         final List<PriceEntity> result = mongoPriceRepository
-                .findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        PRODUCT_ID, BRAND_ID, startDate, endDate);
+                .findTopByProductIdAndBrandIdAndApplicationDate(
+                        PRODUCT_ID, BRAND_ID, startDate, PAGE_REQUEST);
 
         assertEquals(0, result.size(), "Expected no matching price entities");
     }

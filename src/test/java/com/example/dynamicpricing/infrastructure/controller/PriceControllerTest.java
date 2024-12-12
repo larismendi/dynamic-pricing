@@ -14,7 +14,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.verify;
@@ -28,9 +29,10 @@ class PriceControllerTest {
     private static final int PRICE_LIST = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
-    private static final LocalDateTime APPLICATION_DATE = LocalDateTime.of(2023, 12, 1, 14, 0, 0);
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
+    private static final ZoneId ZONE_ID = ZoneId.of("UTC");
+    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.of(2023, 12, 1, 14, 0, 0, 0, ZONE_ID);
+    private static final ZonedDateTime START_DATE = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZONE_ID);
+    private static final ZonedDateTime END_DATE = ZonedDateTime.of(2023, 12, 1, 23, 59, 59, 0, ZONE_ID);
     private static final String PRICE_DETERMINATION_FAIL_MESSAGE = "Price determination failed";
 
     @Mock

@@ -1,6 +1,5 @@
 package com.example.dynamicpricing.integration;
 
-import com.example.dynamicpricing.infrastructure.controller.request.PriceRequest;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
@@ -45,7 +44,9 @@ class PriceControllerIntegrationTest {
     private static final BigDecimal PRICE_2 = BigDecimal.valueOf(120.0);
     private static final String CURRENCY = "EUR";
     private static final String INVALID_PRODUCT_ID_MESSAGE = "Product ID must be positive";
-    private static final String INVALID_APPLICATION_DATE_MESSAGE_CONTAINS = "Invalid JSON format: JSON parse error:";
+    private static final String INVALID_DATETIME = "invalid-datetime";
+    private static final String INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE =
+            "Invalid value provided for 'applicationDate'";
 
     @Container
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
@@ -112,14 +113,15 @@ class PriceControllerIntegrationTest {
 
     @Test
     void givenValidPriceRequest_whenCalculatePrice_thenReturnValidPriceResponse() {
-        final PriceRequest priceRequest = PriceRequest.builder()
-                .productId(PRODUCT_ID)
-                .brandId(BRAND_ID)
-                .applicationDate(APPLICATION_DATE)
-                .build();
+        final String url = "/api/price?productId=" + PRODUCT_ID + "&brandId=" + BRAND_ID + "&applicationDate="
+                + APPLICATION_DATE;
 
-        final ResponseEntity<PriceResponse> response = restTemplate.postForEntity(
-                "/api/price", priceRequest, PriceResponse.class);
+        final ResponseEntity<PriceResponse> response = restTemplate.exchange(
+                url,
+                HttpMethod.GET,
+                null,
+                PriceResponse.class
+        );
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -130,18 +132,14 @@ class PriceControllerIntegrationTest {
 
     @Test
     void givenInvalidProductIdPriceRequest_whenCalculatePrice_thenReturnBadRequest() {
-        final PriceRequest invalidRequest = PriceRequest.builder()
-                .productId(BAD_PRODUCT_ID)
-                .brandId(BRAND_ID)
-                .applicationDate(ZonedDateTime.now())
-                .build();
+        final String url = "/api/price?productId=" + BAD_PRODUCT_ID + "&brandId=" + BRAND_ID + "&applicationDate="
+                + APPLICATION_DATE;
 
         final ResponseEntity<Map<String, String>> response = restTemplate.exchange(
-                "/api/price",
-                HttpMethod.POST,
-                new HttpEntity<>(invalidRequest),
-                new ParameterizedTypeReference<>() {
-                }
+                url,
+                HttpMethod.GET,
+                null,
+                new ParameterizedTypeReference<>() {}
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -151,28 +149,18 @@ class PriceControllerIntegrationTest {
 
     @Test
     void givenInvalidApplicationDatePriceRequest_whenCalculatePrice_thenReturnBadRequest() {
-        final String validJson = """
-                {
-                    "productId": 101,
-                    "brandId": 1,
-                    "applicationDate": "invalid-datetime"
-                }
-                """;
-
-        final HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        final HttpEntity<String> requestEntity = new HttpEntity<>(validJson, headers);
+        final String url = "/api/price?productId=" + PRODUCT_ID + "&brandId=" + BRAND_ID + "&applicationDate="
+                + INVALID_DATETIME;
 
         final ResponseEntity<String> response = restTemplate.exchange(
-                "/api/price",
-                HttpMethod.POST,
-                requestEntity,
+                url,
+                HttpMethod.GET,
+                null,
                 String.class
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains(INVALID_APPLICATION_DATE_MESSAGE_CONTAINS));
+        assertTrue(response.getBody().contains(INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE));
     }
 }

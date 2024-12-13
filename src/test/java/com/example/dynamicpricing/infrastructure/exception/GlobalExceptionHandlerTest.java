@@ -8,7 +8,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -26,8 +25,13 @@ class GlobalExceptionHandlerTest {
 
     private static final String PRICE_NOT_FOUND = "Price not found";
     private static final String DEFAULT_MESSAGE = "must be positive";
-    private static final String NOT_READABLE_MESSAGE = "Invalid JSON format";
-    private static final String NOT_READABLE_MESSAGE_TEMPLATE = "Invalid JSON format: Invalid JSON format";
+    private static final String CONVERSION_ERROR_MESSAGE = "Failed to convert value for 'applicationDate'";
+    private static final String NULL_MESSAGE = null;
+    private static final String NO_ERROR_MESSAGE_PROVIDED = "No error message provided";
+    private static final String EXPECTED_FORMAT_ISO_DATE_TIME = "Expected format: ISO_DATE_TIME";
+    private static final String APPLICATION_DATE = "applicationDate";
+    private static final String PRICE_REQUEST = "priceRequest";
+    private static final String PRICE_FIELD = "price";
 
     @InjectMocks
     private GlobalExceptionHandler globalExceptionHandler;
@@ -51,7 +55,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void givenMethodArgumentNotValidException_whenHandleValidationExceptions_thenReturnBadRequestResponse() {
-        final FieldError fieldError = new FieldError("priceRequest", "price", DEFAULT_MESSAGE);
+        final FieldError fieldError = new FieldError(PRICE_REQUEST, PRICE_FIELD, DEFAULT_MESSAGE);
         when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
         when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
 
@@ -59,20 +63,35 @@ class GlobalExceptionHandlerTest {
                 .handleValidationExceptions(methodArgumentNotValidException);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(Objects.requireNonNull(response.getBody()).containsKey("price"));
-        assertEquals(DEFAULT_MESSAGE, response.getBody().get("price"));
+        assertTrue(Objects.requireNonNull(response.getBody()).containsKey(PRICE_FIELD));
+        assertEquals(DEFAULT_MESSAGE, response.getBody().get(PRICE_FIELD));
     }
 
     @Test
-    void givenHttpMessageNotReadableException_whenHandleJsonParseExceptions_thenReturnBadRequestResponse() {
-        final HttpMessageNotReadableException exception = new HttpMessageNotReadableException(NOT_READABLE_MESSAGE);
+    void givenMethodArgumentNotValidExceptionWithConversionError_whenHandleValidationExceptions_thenReturnError() {
+        final FieldError fieldError = new FieldError(PRICE_REQUEST, APPLICATION_DATE, CONVERSION_ERROR_MESSAGE);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+        when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
 
-        final ResponseEntity<Map<String, String>> response =
-                globalExceptionHandler.handleJsonParseExceptions(exception);
+        final ResponseEntity<Map<String, String>> response = globalExceptionHandler
+                .handleValidationExceptions(methodArgumentNotValidException);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(Objects.requireNonNull(response.getBody()).containsKey("error"));
-        assertEquals(NOT_READABLE_MESSAGE_TEMPLATE, response.getBody().get("error"));
+        assertTrue(Objects.requireNonNull(response.getBody()).containsKey(APPLICATION_DATE));
+        assertTrue(response.getBody().get(APPLICATION_DATE).contains(EXPECTED_FORMAT_ISO_DATE_TIME));
+    }
+
+    @Test
+    void givenMethodArgumentNotValidExceptionWithNullMessage_whenHandleValidationExceptions_thenReturnDefaultMessage() {
+        final FieldError fieldError = new FieldError(PRICE_REQUEST, APPLICATION_DATE, NULL_MESSAGE);
+        when(bindingResult.getFieldErrors()).thenReturn(List.of(fieldError));
+        when(methodArgumentNotValidException.getBindingResult()).thenReturn(bindingResult);
+
+        final ResponseEntity<Map<String, String>> response = globalExceptionHandler
+                .handleValidationExceptions(methodArgumentNotValidException);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertTrue(Objects.requireNonNull(response.getBody()).containsKey(APPLICATION_DATE));
+        assertEquals(NO_ERROR_MESSAGE_PROVIDED, response.getBody().get(APPLICATION_DATE));
     }
 }
-

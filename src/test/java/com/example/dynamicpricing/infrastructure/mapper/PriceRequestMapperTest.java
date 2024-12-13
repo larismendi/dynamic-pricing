@@ -32,18 +32,4 @@ class PriceRequestMapperTest {
         assertEquals(priceRequest.getBrandId(), result.brandId(), "Brand ID should match");
         assertEquals(priceRequest.getApplicationDate(), result.applicationDate(), "Application date should match");
     }
-
-    @Test
-    void givenIncompletePriceRequest_whenToDto_thenDefaultValuesAreUsed() {
-        final PriceRequest priceRequest = PriceRequest.builder()
-                .productId(PRODUCT_ID)
-                .build();
-
-        final PriceDto result = priceRequestMapper.toDto(priceRequest);
-
-        assertNotNull(result, "The result should not be null");
-        assertEquals(priceRequest.getProductId(), result.productId(), "Product ID should match");
-        assertEquals(0, result.brandId(), "Default Brand ID should be 0");
-        assertNull(result.applicationDate(), "Default Application Date should be null");
-    }
 }

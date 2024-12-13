@@ -13,7 +13,7 @@ public class MongoConfig {
 
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = "MongoDB URI is not configured properly";
     private static final Logger logger = LoggerFactory.getLogger(MongoConfig.class);
-    public static final String PLEASE_SET_THE_MONGO_URI_ENVIRONMENT_VARIABLE =
+    private static final String PLEASE_SET_THE_MONGO_URI_ENVIRONMENT_VARIABLE =
             "MongoDB URI is not configured. Please set the MONGO_URI environment variable.";
 
     @Value("${spring.data.mongodb.uri}")

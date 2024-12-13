@@ -4,6 +4,8 @@ import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.domain.repository.PriceRepository;
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.mapper.PriceEntityMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -17,6 +19,12 @@ import java.util.stream.Collectors;
 @Repository
 public class PriceRepositoryImpl implements PriceRepository {
 
+    private static final Logger logger = LoggerFactory.getLogger(PriceRepositoryImpl.class);
+    private static final String FOUND_PRICE_S_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE =
+            "Found {} price(s) for productId: {}, brandId: {}, applicationDate: {}";
+    private static final String FETCHING_PRICES_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE =
+            "Fetching prices for productId: {}, brandId: {}, applicationDate: {}";
+
     private final MongoPriceRepository mongoPriceRepository;
     private final PriceEntityMapper priceEntityMapper;
 
@@ -28,13 +36,17 @@ public class PriceRepositoryImpl implements PriceRepository {
 
     @Override
     public List<Price> findPrices(int productId, int brandId, ZonedDateTime applicationDate) {
+        logger.info(FETCHING_PRICES_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE, productId, brandId, applicationDate);
+
         final Instant applicationInstant = applicationDate.toInstant();
-        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
+        final Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
 
         final List<PriceEntity> priceEntities =
                 mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
                         productId, brandId, applicationInstant, pageable);
 
+        logger.info(FOUND_PRICE_S_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE,
+                priceEntities.size(), productId, brandId, applicationDate);
         return priceEntities.stream()
                 .map(entity -> priceEntityMapper.toDomain(entity, applicationDate.getZone()))
                 .collect(Collectors.toList());

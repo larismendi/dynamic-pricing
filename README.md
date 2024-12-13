@@ -182,16 +182,22 @@ This provides a detailed view of all available endpoints, their parameters, and 
 
 ## Example Request
 
-**POST** `/api/price`
+### **GET** `/api/price`
 
-**Request Body:**
+**Query Parameters:**
 
-```json
-{
-  "productId": 35455,
-  "brandId": 1,
-  "applicationDate": "2020-06-14T22:00:00Z"
-}
+| Parameter       | Type    | Description                                |
+|------------------|---------|--------------------------------------------|
+| `productId`      | `int`   | ID of the product (required).              |
+| `brandId`        | `int`   | ID of the brand (required).                |
+| `applicationDate`| `string`| Date and time in ISO 8601 format (required).|
+
+#### Example Successful Request:
+
+**Request URL:**
+
+```plaintext
+GET /api/price?productId=35455&brandId=1&applicationDate=2020-06-14T22:00:00Z
 ```
 
 **Response Body:**
@@ -206,6 +212,59 @@ This provides a detailed view of all available endpoints, their parameters, and 
   "price": 35.5,
   "currency": "EUR"
 }
+```
+
+**Response Code:**
+
+```plaintext
+200 OK
+```
+
+#### Example Error Request:
+
+**Request URL:**
+
+```plaintext
+http://localhost:8080/api/price?productId=0&brandId=0&applicationDate=2020-06-14T22:00:00Z
+```
+
+**Response Body:**
+
+```json
+{
+  "productId": "Product ID must be positive",
+  "brandId": "Brand ID must be positive"
+}
+```
+
+**Response Code:**
+
+```plaintext
+400 Bad Request
+```
+
+## Health Check
+
+### **GET** `/health`
+
+This endpoint can be used to verify if the application is running and healthy.
+
+#### Example Request URL
+
+```plaintext
+GET /health
+```
+
+**Response Body:**
+
+```plaintest
+Application is healthy
+```
+
+**Response Code:**
+
+```plaintest
+200 OK: The application is healthy.
 ```
 
 ## Contributing

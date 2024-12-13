@@ -21,6 +21,8 @@ import static org.mockito.Mockito.*;
 
 class DataInitializerTest {
 
+    private static final int TWO_TIMES = 2;
+
     @Mock
     private MongoPriceRepository mongoPriceRepository;
 
@@ -69,8 +71,8 @@ class DataInitializerTest {
         verify(mongoPriceRepository).deleteAll();
         verify(mongoPriceRepository).saveAll(anyList());
 
-        verify(mongoTemplate, times(2)).indexOps(PriceEntity.class);
-        verify(indexOperations, times(2)).ensureIndex(any(Index.class));
+        verify(mongoTemplate, times(TWO_TIMES)).indexOps(PriceEntity.class);
+        verify(indexOperations, times(TWO_TIMES)).ensureIndex(any(Index.class));
     }
 
     @Test

@@ -192,12 +192,12 @@ This provides a detailed view of all available endpoints, their parameters, and 
 | `brandId`        | `int`   | ID of the brand (required).                |
 | `applicationDate`| `string`| Date and time in ISO 8601 format (required).|
 
-#### Example Successful Request:
+#### Example Successful Request With UTC:
 
 **Request URL:**
 
-```plaintext
-GET /api/price?productId=35455&brandId=1&applicationDate=2020-06-14T22:00:00Z
+```bash
+curl --location 'http://localhost:8080/api/price?productId=35455&brandId=1&applicationDate=2020-06-14T22:00:00Z'
 ```
 
 **Response Body:**
@@ -220,12 +220,40 @@ GET /api/price?productId=35455&brandId=1&applicationDate=2020-06-14T22:00:00Z
 200 OK
 ```
 
+#### Example Successful Request With +02:00 Zone Time:
+
+**Request URL:**
+
+```bash
+curl --location 'http://localhost:8080/api/price?productId=35455&brandId=1&applicationDate=2020-06-15T00:00:00%2B02:00'
+```
+
+**Response Body:**
+
+```json
+{
+   "productId": 35455,
+   "brandId": 1,
+   "priceList": 1,
+   "startDate": "2020-06-14T02:00+02:00",
+   "endDate": "2021-01-01T01:59:59+02:00",
+   "price": 35.5,
+   "currency": "EUR"
+}
+```
+
+**Response Code:**
+
+```plaintext
+200 OK
+```
+
 #### Example Error Request:
 
 **Request URL:**
 
-```plaintext
-http://localhost:8080/api/price?productId=0&brandId=0&applicationDate=2020-06-14T22:00:00Z
+```bash
+curl --location 'http://localhost:8080/api/price?productId=0&brandId=0&applicationDate=2020-06-14T22:00:00Z'
 ```
 
 **Response Body:**
@@ -251,8 +279,8 @@ This endpoint can be used to verify if the application is running and healthy.
 
 #### Example Request URL
 
-```plaintext
-GET /health
+```bash
+curl --location 'http://localhost:8080/health'
 ```
 
 **Response Body:**

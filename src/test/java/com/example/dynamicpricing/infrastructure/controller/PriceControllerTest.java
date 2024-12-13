@@ -63,7 +63,7 @@ class PriceControllerTest {
     void givenValidPriceRequest_whenCalculatePrice_thenReturnsPriceResponse() {
         getPriceRequest();
         getPriceDto();
-        PriceResponse expectedResponse = PriceResponse.builder()
+        final PriceResponse expectedResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -76,7 +76,7 @@ class PriceControllerTest {
         when(priceRequestMapper.toDto(priceRequest)).thenReturn(priceDto);
         when(determinePriceUseCase.determinatePrice(priceDto)).thenReturn(expectedResponse);
 
-        ResponseEntity<PriceResponse> responseEntity = priceController.calculatePrice(priceRequest);
+        final ResponseEntity<PriceResponse> responseEntity = priceController.calculatePrice(priceRequest);
 
         assertNotNull(responseEntity);
         assertEquals(HttpStatus.OK, responseEntity.getStatusCode());
@@ -95,7 +95,7 @@ class PriceControllerTest {
         when(determinePriceUseCase.determinatePrice(priceDto))
                 .thenThrow(new RuntimeException(PRICE_DETERMINATION_FAIL_MESSAGE));
 
-        RuntimeException exception = assertThrows(RuntimeException.class,
+        final RuntimeException exception = assertThrows(RuntimeException.class,
                 () -> priceController.calculatePrice(priceRequest));
 
         assertEquals(PRICE_DETERMINATION_FAIL_MESSAGE, exception.getMessage());

@@ -11,12 +11,12 @@ import java.util.List;
 
 @Repository
 public interface MongoPriceRepository extends MongoRepository<PriceEntity, String> {
-    @Query("{ " +
-            " 'productId': ?0, " +
-            " 'brandId': ?1, " +
-            " 'startDate': { '$lte': ?2 }, " +
-            " 'endDate': { '$gte': ?2 } " +
-            "}")
+    @Query("{ "
+            + " 'productId': ?0, "
+            + " 'brandId': ?1, "
+            + " 'startDate': { '$lte': ?2 }, "
+            + " 'endDate': { '$gte': ?2 } "
+            + "}")
     List<PriceEntity> findTopByProductIdAndBrandIdAndApplicationDate(
             int productId,
             int brandId,

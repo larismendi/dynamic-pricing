@@ -34,7 +34,7 @@ class DynamicpricingApplicationTest {
     private static final String APPLICATION_IS_HEALTHY = "Application is healthy";
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @Autowired

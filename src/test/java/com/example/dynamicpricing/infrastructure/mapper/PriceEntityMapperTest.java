@@ -6,11 +6,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class PriceEntityMapperTest {
+class PriceEntityMapperTest {
 
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 100;
@@ -18,18 +20,19 @@ public class PriceEntityMapperTest {
     private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
+    private static final ZoneId ZONE_ID = ZoneId.of("UTC");
+    private static final Instant START_DATE = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZONE_ID).toInstant();
+    private static final Instant END_DATE = ZonedDateTime.of(2023, 12, 1, 23, 59, 59, 0, ZONE_ID).toInstant();
 
     private PriceEntityMapper priceEntityMapper;
 
     @BeforeEach
     void setUp() {
-        priceEntityMapper = entity -> Price.builder()
+        priceEntityMapper = (entity, zoneId) -> Price.builder()
                 .productId(entity.getProductId())
                 .brandId(entity.getBrandId())
-                .startDate(entity.getStartDate())
-                .endDate(entity.getEndDate())
+                .startDate(entity.getStartDate().atZone(ZONE_ID))
+                .endDate(entity.getEndDate().atZone(ZONE_ID))
                 .priceList(entity.getPriceList())
                 .priority(entity.getPriority())
                 .price(BigDecimal.valueOf(entity.getPrice()))
@@ -39,7 +42,7 @@ public class PriceEntityMapperTest {
 
     @Test
     void givenValidPriceEntity_whenMappedToDomain_thenFieldsAreMappedCorrectly() {
-        PriceEntity entity = PriceEntity.builder()
+        final PriceEntity entity = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .startDate(START_DATE)
@@ -50,16 +53,15 @@ public class PriceEntityMapperTest {
                 .curr(CURRENCY)
                 .build();
 
-        Price price = priceEntityMapper.toDomain(entity);
+        final Price price = priceEntityMapper.toDomain(entity, ZONE_ID);
 
         assertEquals(entity.getProductId(), price.getProductId());
         assertEquals(entity.getBrandId(), price.getBrandId());
-        assertEquals(entity.getStartDate(), price.getStartDate());
-        assertEquals(entity.getEndDate(), price.getEndDate());
+        assertEquals(entity.getStartDate().atZone(ZONE_ID), price.getStartDate());
+        assertEquals(entity.getEndDate().atZone(ZONE_ID), price.getEndDate());
         assertEquals(entity.getPriceList(), price.getPriceList());
         assertEquals(entity.getPriority(), price.getPriority());
         assertEquals(entity.getPrice(), price.getPrice().doubleValue());
         assertEquals(entity.getCurr(), price.getCurrency());
     }
 }
-

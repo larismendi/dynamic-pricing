@@ -7,8 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -28,7 +27,7 @@ public class PriceServiceImpl implements PriceService {
         this.priceRepository = priceRepository;
     }
 
-    public Price getApplicablePrice(int brandId, int productId, LocalDateTime applicationDate) {
+    public Price getApplicablePrice(int brandId, int productId, ZonedDateTime applicationDate) {
         logger.info(PRICE_FOR_BRAND_ID_PRODUCT_ID_APPLICATION_DATE,
                 brandId, productId, applicationDate);
         final List<Price> prices = priceRepository.findPrices(productId, brandId, applicationDate);
@@ -41,7 +40,11 @@ public class PriceServiceImpl implements PriceService {
 
         return prices.stream()
                 .filter(price -> price.isApplicable(applicationDate))
-                .max(Comparator.comparingInt(Price::getPriority))
-                .orElseThrow(() -> new PriceNotFoundException(NO_APPLICABLE_PRICE_FOUND));
+                .findFirst()
+                .orElseThrow(() -> {
+                    logger.warn(PRICE_WITH_BRAND_ID_PRODUCT_ID_APPLICATION_DATE_NOT_FOUND,
+                            brandId, productId, applicationDate);
+                    return new PriceNotFoundException(NO_APPLICABLE_PRICE_FOUND);
+                });
     }
 }

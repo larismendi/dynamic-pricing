@@ -1,9 +1,9 @@
 package com.example.dynamicpricing.application.dto;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 public record PriceDto(
         int productId,
         int brandId,
-        LocalDateTime applicationDate
+        ZonedDateTime applicationDate
 ) {}

@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import static org.junit.jupiter.api.Assertions.*;
 
 
-public class PriceResponseTests {
+class PriceResponseTests {
 
     private static final int BRAND_ID = 101;
     private static final int PRODUCT_ID = 1;

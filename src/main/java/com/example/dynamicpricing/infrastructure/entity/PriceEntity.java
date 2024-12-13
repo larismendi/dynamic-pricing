@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @Getter
 @Builder
@@ -28,12 +28,12 @@ public class PriceEntity {
     @Field("start_date")
     @JsonProperty("start_date")
     @NotNull(message = "Start date cannot be null")
-    private LocalDateTime startDate;
+    private Instant startDate;
 
     @Field("end_date")
     @JsonProperty("end_date")
     @NotNull(message = "End date cannot be null")
-    private LocalDateTime endDate;
+    private Instant endDate;
 
     @Field("price_list")
     @JsonProperty("price_list")

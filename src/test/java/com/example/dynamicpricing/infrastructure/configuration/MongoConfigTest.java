@@ -1,7 +1,5 @@
 package com.example.dynamicpricing.infrastructure.configuration;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,15 +10,17 @@ import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import static org.junit.jupiter.api.Assertions.*;
+
 @Testcontainers
-public class MongoConfigTest {
+class MongoConfigTest {
 
     private static final int MONGO_PORT = 27017;
     private static final String DB_NAME = "test-database";
     private static final String ILLEGAL_ARGUMENT_EXCEPTION = "MongoDB URI is not configured properly";
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @InjectMocks

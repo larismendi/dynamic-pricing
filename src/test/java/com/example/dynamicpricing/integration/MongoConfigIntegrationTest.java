@@ -12,12 +12,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Testcontainers
 @ActiveProfiles("integration")
-public class MongoConfigIntegrationTest {
+class MongoConfigIntegrationTest {
 
     private static final int MONGO_PORT = 27017;
 
     @Container
-    public static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
+    static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
             .withExposedPorts(MONGO_PORT);
 
     @BeforeAll
@@ -31,12 +31,12 @@ public class MongoConfigIntegrationTest {
     }
 
     @AfterAll
-    public static void tearDown() {
+    static void tearDown() {
         mongoDBContainer.stop();
     }
 
     @Test
-    public void testMongoDBContainerIsRunning() {
+    void testMongoDBContainerIsRunning() {
         assertTrue(mongoDBContainer.isRunning(), "The MongoDB container is running.");
 
         final String mongoDbUrl = mongoDBContainer.getReplicaSetUrl();

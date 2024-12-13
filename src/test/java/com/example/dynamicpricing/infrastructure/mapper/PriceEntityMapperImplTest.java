@@ -8,7 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -22,8 +24,8 @@ class PriceEntityMapperImplTest {
     private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
-    private static final LocalDateTime START_DATE = LocalDateTime.of(2023, 11, 1, 0, 0, 0);
-    private static final LocalDateTime END_DATE = LocalDateTime.of(2023, 12, 1, 23, 59, 59);
+    private static final Instant START_DATE = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZoneId.of("UTC")).toInstant();
+    private static final Instant END_DATE = ZonedDateTime.of(2023, 12, 1, 23, 59, 59, 0, ZoneId.of("UTC")).toInstant();
 
     private PriceEntityMapperImpl priceEntityMapper;
 
@@ -34,7 +36,7 @@ class PriceEntityMapperImplTest {
 
     @Test
     void givenValidPriceEntity_whenToDomain_thenReturnMappedPrice() {
-        PriceEntity priceEntity = PriceEntity.builder()
+        final PriceEntity priceEntity = PriceEntity.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
                 .priceList(PRICE_LIST)
@@ -45,16 +47,16 @@ class PriceEntityMapperImplTest {
                 .priority(PRIORITY)
                 .build();
 
-        Price result = priceEntityMapper.toDomain(priceEntity);
+        final Price result = priceEntityMapper.toDomain(priceEntity, ZoneId.of("UTC"));
 
-        assertNotNull(result, "The result should not be null");
-        assertEquals(priceEntity.getProductId(), result.getProductId(), "Product ID should match");
-        assertEquals(priceEntity.getBrandId(), result.getBrandId(), "Brand ID should match");
-        assertEquals(priceEntity.getPriceList(), result.getPriceList(), "Price list should match");
-        assertEquals(priceEntity.getStartDate(), result.getStartDate(), "Start date should match");
-        assertEquals(priceEntity.getEndDate(), result.getEndDate(), "End date should match");
-        assertEquals(BigDecimal.valueOf(priceEntity.getPrice()), result.getPrice(), "Price should match");
-        assertEquals(priceEntity.getCurr(), result.getCurrency(), "Currency should match");
-        assertEquals(priceEntity.getPriority(), result.getPriority(), "Priority should match");
+        assertNotNull(result);
+        assertEquals(priceEntity.getProductId(), result.getProductId());
+        assertEquals(priceEntity.getBrandId(), result.getBrandId());
+        assertEquals(priceEntity.getPriceList(), result.getPriceList());
+        assertEquals(priceEntity.getStartDate(), result.getStartDate().toInstant());
+        assertEquals(priceEntity.getEndDate(), result.getEndDate().toInstant());
+        assertEquals(BigDecimal.valueOf(priceEntity.getPrice()), result.getPrice());
+        assertEquals(priceEntity.getCurr(), result.getCurrency());
+        assertEquals(priceEntity.getPriority(), result.getPriority());
     }
 }

@@ -4,11 +4,13 @@ import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.domain.repository.PriceRepository;
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.mapper.PriceEntityMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -25,14 +27,16 @@ public class PriceRepositoryImpl implements PriceRepository {
     }
 
     @Override
-    public List<Price> findPrices(int productId, int brandId, LocalDateTime applicationDate) {
-        final Instant formatApplicationDate = applicationDate.atZone(ZoneId.of("UTC")).toInstant();
+    public List<Price> findPrices(int productId, int brandId, ZonedDateTime applicationDate) {
+        final Instant applicationInstant = applicationDate.toInstant();
+        Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
+
         final List<PriceEntity> priceEntities =
-                mongoPriceRepository.findByProductIdAndBrandIdAndStartDateLessThanEqualAndEndDateGreaterThanEqual(
-                        productId, brandId, formatApplicationDate, formatApplicationDate);
+                mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
+                        productId, brandId, applicationInstant, pageable);
 
         return priceEntities.stream()
-                .map(priceEntityMapper::toDomain)
+                .map(entity -> priceEntityMapper.toDomain(entity, applicationDate.getZone()))
                 .collect(Collectors.toList());
     }
 }

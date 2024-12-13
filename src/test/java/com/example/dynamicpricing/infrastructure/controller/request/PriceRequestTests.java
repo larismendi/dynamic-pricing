@@ -9,19 +9,19 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class PriceRequestTests {
+class PriceRequestTests {
 
     private static final int VALID_ID = 1;
     private static final int NEGATIVE_ID = -1;
-    private static final LocalDateTime APPLICATION_DATE = LocalDateTime.now();
+    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.now();
     private static final Logger logger = LoggerFactory.getLogger(PriceRequestTests.class);
-    private static final LocalDateTime NULL_APPLICATION_DATE = null;
+    private static final ZonedDateTime NULL_APPLICATION_DATE = null;
 
     private Validator validator;
 

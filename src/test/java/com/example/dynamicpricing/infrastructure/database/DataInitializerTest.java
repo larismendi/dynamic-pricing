@@ -1,18 +1,22 @@
 package com.example.dynamicpricing.infrastructure.database;
 
+import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.index.Index;
+import org.springframework.data.mongodb.core.index.IndexOperations;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.function.Supplier;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class DataInitializerTest {
@@ -21,7 +25,13 @@ class DataInitializerTest {
     private MongoPriceRepository mongoPriceRepository;
 
     @Mock
+    private MongoTemplate mongoTemplate;
+
+    @Mock
     private Supplier<InputStream> inputStreamSupplier;
+
+    @Mock
+    private IndexOperations indexOperations;
 
     private DataInitializer dataInitializer;
 
@@ -30,7 +40,7 @@ class DataInitializerTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        dataInitializer = new DataInitializer(mongoPriceRepository, inputStreamSupplier);
+        dataInitializer = new DataInitializer(mongoPriceRepository, mongoTemplate, inputStreamSupplier);
     }
 
     @AfterEach
@@ -48,15 +58,19 @@ class DataInitializerTest {
 
         inputStreamSupplier = () -> inputStream;
 
-        dataInitializer = new DataInitializer(mongoPriceRepository, inputStreamSupplier);
+        dataInitializer = new DataInitializer(mongoPriceRepository, mongoTemplate, inputStreamSupplier);
 
         doNothing().when(mongoPriceRepository).deleteAll();
         when(mongoPriceRepository.saveAll(any(Iterable.class))).thenReturn(Collections.emptyList());
+        when(mongoTemplate.indexOps(PriceEntity.class)).thenReturn(indexOperations);
 
         dataInitializer.run();
 
         verify(mongoPriceRepository).deleteAll();
         verify(mongoPriceRepository).saveAll(anyList());
+
+        verify(mongoTemplate, times(2)).indexOps(PriceEntity.class);
+        verify(indexOperations, times(2)).ensureIndex(any(Index.class));
     }
 
     @Test

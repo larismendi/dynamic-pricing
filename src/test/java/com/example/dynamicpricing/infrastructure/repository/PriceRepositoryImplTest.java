@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 
 import java.time.Instant;
@@ -20,6 +22,8 @@ import java.util.Collections;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
 class PriceRepositoryImplTest {
@@ -28,6 +32,7 @@ class PriceRepositoryImplTest {
     private static final int PRODUCT_ID = 101;
     private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.of(2023, 12, 1, 14, 0, 0, 0, ZoneId.of("UTC"));
     private static final PageRequest PAGE_REQUEST = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
+    private static final String DATABASE_ERROR = "Database error";
 
     @Mock
     private MongoPriceRepository mongoPriceRepository;
@@ -95,5 +100,20 @@ class PriceRepositoryImplTest {
                         PRODUCT_ID, BRAND_ID, formattedDate, PAGE_REQUEST);
         verifyNoInteractions(priceEntityMapper);
     }
-}
 
+    @Test
+    void givenDataAccessException_whenFindPrices_thenRethrowDataAccessException() {
+        final Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
+        when(mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
+                PRODUCT_ID, BRAND_ID, APPLICATION_DATE.toInstant(), pageable
+        )).thenThrow(new DataAccessException(DATABASE_ERROR) {
+        });
+
+        final DataAccessException exception = assertThrows(
+                DataAccessException.class,
+                () -> priceRepositoryImpl.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE)
+        );
+
+        assertEquals(DATABASE_ERROR, exception.getMessage());
+    }
+}

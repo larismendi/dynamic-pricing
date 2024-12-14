@@ -47,8 +47,9 @@ public class DataInitializer implements CommandLineRunner {
         mapper.setPropertyNamingStrategy(PropertyNamingStrategies.SNAKE_CASE);
 
         try {
-            InputStream inputStream = inputStreamSupplier.get();
-            final List<PriceEntity> prices = mapper.readValue(inputStream, new TypeReference<>() {});
+            final InputStream inputStream = inputStreamSupplier.get();
+            final List<PriceEntity> prices = mapper.readValue(inputStream, new TypeReference<>() {
+            });
             mongoPriceRepository.deleteAll();
             mongoPriceRepository.saveAll(prices);
 

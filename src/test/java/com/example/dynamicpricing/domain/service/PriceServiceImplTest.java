@@ -9,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 
 import java.math.BigDecimal;
 import java.time.ZoneId;
@@ -30,7 +31,9 @@ class PriceServiceImplTest {
     private static final String NO_APPLICABLE_PRICE_FOUND = "No applicable price found for the given parameters.";
     private static final ZonedDateTime START_DATE = ZonedDateTime.of(2020, 6, 14, 0, 0, 0, 0, ZoneId.of("UTC"));
     private static final ZonedDateTime END_DATE = ZonedDateTime.of(2020, 6, 14, 23, 59, 59, 0, ZoneId.of("UTC"));
-    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.of(2024, 11, 30, 12, 0, 0, 0, ZoneId.of("UTC"));
+    private static final ZonedDateTime APPLICATION_DATE = ZonedDateTime.of(2020, 6, 14, 15, 0, 0, 0, ZoneId.of("UTC"));
+    private static final String DATABASE_ERROR = "Database error";
+    private static final String ERROR_FETCHING_PRICES_FROM_THE_DATABASE = "Error fetching prices from the database.";
 
     private static final Logger logger = LoggerFactory.getLogger(PriceServiceImplTest.class);
 
@@ -63,54 +66,45 @@ class PriceServiceImplTest {
                 .build();
     }
 
-    private ZonedDateTime getTestApplicationDate() {
-        return ZonedDateTime.of(2020, 6, 14, 15, 0, 0, 0, ZoneId.of("UTC"));
-    }
-
     private void mockPriceRepository(List<Price> prices) {
         when(priceRepository.findPrices(anyInt(), anyInt(), any(ZonedDateTime.class))).thenReturn(prices);
     }
 
     @Test
     void givenPriceFound_whenGetApplicablePrice_thenReturnPrice() {
-        final ZonedDateTime applicationDate = getTestApplicationDate();
         final Price price = createPrice(START_DATE, END_DATE, BigDecimal.valueOf(35.50));
 
         mockPriceRepository(List.of(price));
 
-        final Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, applicationDate);
+        final Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE);
 
         assertNotNull(result);
         assertEquals(price, result);
-        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, applicationDate);
+        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
     @Test
     void givenNoPrices_whenGetApplicablePrice_thenThrowPriceNotFoundException() {
-        final ZonedDateTime applicationDate = getTestApplicationDate();
-
         mockPriceRepository(Collections.emptyList());
 
         final PriceNotFoundException exception = assertThrows(PriceNotFoundException.class, () ->
-                priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, applicationDate));
+                priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE));
 
         assertEquals(PRICE_IS_EMPTY, exception.getMessage());
-        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, applicationDate);
+        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
     @Test
     void givenPriceIsApplicable_whenGetApplicablePrice_thenReturnPrice() {
-        final ZonedDateTime applicationDate = getTestApplicationDate();
-
         final Price price = createPrice(START_DATE, END_DATE, BigDecimal.valueOf(35.50));
 
         mockPriceRepository(List.of(price));
 
-        final Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, applicationDate);
+        final Price result = priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE);
 
         assertNotNull(result);
         assertEquals(price, result);
-        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, applicationDate);
+        verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
     @Test
@@ -139,5 +133,20 @@ class PriceServiceImplTest {
         assertEquals(NO_APPLICABLE_PRICE_FOUND, exception.getMessage());
 
         verify(priceRepository, times(1)).findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
+    }
+
+    @Test
+    void givenDataAccessException_whenGetApplicablePrice_thenThrowPriceNotFoundException() {
+        when(priceRepository.findPrices(PRODUCT_ID, BRAND_ID, APPLICATION_DATE))
+                .thenThrow(new DataAccessException(DATABASE_ERROR) {
+                });
+
+        final PriceNotFoundException exception = assertThrows(
+                PriceNotFoundException.class,
+                () -> priceService.getApplicablePrice(BRAND_ID, PRODUCT_ID, APPLICATION_DATE)
+        );
+
+        assertEquals(ERROR_FETCHING_PRICES_FROM_THE_DATABASE, exception.getMessage());
+        assertInstanceOf(DataAccessException.class, exception.getCause());
     }
 }

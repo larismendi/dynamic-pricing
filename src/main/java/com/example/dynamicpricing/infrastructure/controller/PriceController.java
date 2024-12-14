@@ -1,10 +1,12 @@
 package com.example.dynamicpricing.infrastructure.controller;
 
 import com.example.dynamicpricing.application.dto.PriceDto;
+import com.example.dynamicpricing.application.dto.PriceResponseDto;
 import com.example.dynamicpricing.application.usecase.DeterminePriceUseCase;
 import com.example.dynamicpricing.infrastructure.controller.request.PriceRequest;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import com.example.dynamicpricing.infrastructure.mapper.PriceRequestMapper;
+import com.example.dynamicpricing.infrastructure.mapper.PriceResponseMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -30,10 +32,14 @@ public class PriceController {
 
     private final DeterminePriceUseCase determinePriceUseCase;
     private final PriceRequestMapper priceRequestMapper;
+    private final PriceResponseMapper priceResponseMapper;
 
-    public PriceController(DeterminePriceUseCase determinePriceUseCase, PriceRequestMapper priceRequestMapper) {
+    public PriceController(DeterminePriceUseCase determinePriceUseCase,
+                           PriceRequestMapper priceRequestMapper,
+                           PriceResponseMapper priceResponseMapper) {
         this.determinePriceUseCase = determinePriceUseCase;
         this.priceRequestMapper = priceRequestMapper;
+        this.priceResponseMapper = priceResponseMapper;
     }
 
     @Operation(
@@ -78,7 +84,8 @@ public class PriceController {
                 priceRequest.getProductId(), priceRequest.getBrandId(), priceRequest.getApplicationDate());
 
         final PriceDto priceDto = priceRequestMapper.toDto(priceRequest);
-        final PriceResponse priceResponse = determinePriceUseCase.determinatePrice(priceDto);
+        final PriceResponseDto priceResponseDto = determinePriceUseCase.determinatePrice(priceDto);
+        final PriceResponse priceResponse = priceResponseMapper.toPriceResponse(priceResponseDto);
 
         logger.info(PRICE_CALCULATED_SUCCESSFULLY, priceResponse);
         return ResponseEntity.ok(priceResponse);

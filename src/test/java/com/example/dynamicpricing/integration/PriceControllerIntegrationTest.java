@@ -9,7 +9,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.http.*;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -45,8 +47,7 @@ class PriceControllerIntegrationTest {
     private static final String CURRENCY = "EUR";
     private static final String INVALID_PRODUCT_ID_MESSAGE = "Product ID must be positive";
     private static final String INVALID_DATETIME = "invalid-datetime";
-    private static final String INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE =
-            "Invalid value provided for 'applicationDate'";
+    private static final String INVALID_VALUE_FOR_APPLICATION_DATE = "Invalid value for 'applicationDate'";
 
     @Container
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
@@ -139,7 +140,8 @@ class PriceControllerIntegrationTest {
                 url,
                 HttpMethod.GET,
                 null,
-                new ParameterizedTypeReference<>() {}
+                new ParameterizedTypeReference<>() {
+                }
         );
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
@@ -161,6 +163,6 @@ class PriceControllerIntegrationTest {
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
         assertNotNull(response.getBody());
-        assertTrue(response.getBody().contains(INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE));
+        assertTrue(response.getBody().contains(INVALID_VALUE_FOR_APPLICATION_DATE));
     }
 }

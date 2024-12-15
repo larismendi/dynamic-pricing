@@ -1,7 +1,7 @@
 package com.example.dynamicpricing.application.mapper;
 
+import com.example.dynamicpricing.application.dto.PriceResponseDto;
 import com.example.dynamicpricing.domain.model.Price;
-import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
@@ -38,15 +38,15 @@ class PriceUseCaseMapperImplTest {
                 .currency(CURRENCY)
                 .build();
 
-        final PriceResponse response = priceUseCaseMapper.toResponse(mockPrice);
+        final PriceResponseDto response = priceUseCaseMapper.toResponseDto(mockPrice);
 
         assertNotNull(response);
-        assertEquals(PRODUCT_ID, response.getProductId());
-        assertEquals(BRAND_ID, response.getBrandId());
-        assertEquals(PRICE_LIST, response.getPriceList());
-        assertEquals(START_DATE.toString(), response.getStartDate());
-        assertEquals(END_DATE.toString(), response.getEndDate());
-        assertEquals(PRICE.doubleValue(), response.getPrice(), DELTA);
-        assertEquals(CURRENCY, response.getCurrency());
+        assertEquals(PRODUCT_ID, response.productId());
+        assertEquals(BRAND_ID, response.brandId());
+        assertEquals(PRICE_LIST, response.priceList());
+        assertEquals(START_DATE.toString(), response.startDate());
+        assertEquals(END_DATE.toString(), response.endDate());
+        assertEquals(PRICE.doubleValue(), response.price(), DELTA);
+        assertEquals(CURRENCY, response.currency());
     }
 }

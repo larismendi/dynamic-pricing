@@ -1,12 +1,12 @@
 package com.example.dynamicpricing.application.usecase;
 
 import com.example.dynamicpricing.application.dto.PriceDto;
+import com.example.dynamicpricing.application.dto.PriceResponseDto;
 import com.example.dynamicpricing.application.exception.PriceNotAvailableException;
 import com.example.dynamicpricing.application.mapper.PriceUseCaseMapper;
 import com.example.dynamicpricing.domain.exception.PriceNotFoundException;
 import com.example.dynamicpricing.domain.model.Price;
 import com.example.dynamicpricing.domain.service.PriceService;
-import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,26 +69,25 @@ class DeterminePriceUseCaseImplTest {
                 .price(PRICE)
                 .currency(CURRENCY)
                 .build();
-        final PriceResponse expectedPriceResponse = PriceResponse.builder()
-                .brandId(BRAND_ID)
-                .productId(PRODUCT_ID)
-                .startDate(START_DATE.toString())
-                .endDate(END_DATE.toString())
-                .priceList(PRICE_LIST)
-                .price(PRICE.doubleValue())
-                .currency(CURRENCY)
-                .build();
+        final PriceResponseDto expectedPriceResponse = new PriceResponseDto(
+                PRODUCT_ID,
+                BRAND_ID,
+                PRICE_LIST,
+                START_DATE.toString(),
+                END_DATE.toString(),
+                PRICE.doubleValue(),
+                CURRENCY);
 
         when(priceService.getApplicablePrice(priceDto.brandId(), priceDto.productId(), priceDto.applicationDate()))
                 .thenReturn(price);
-        when(priceUseCaseMapper.toResponse(price)).thenReturn(expectedPriceResponse);
+        when(priceUseCaseMapper.toResponseDto(price)).thenReturn(expectedPriceResponse);
 
-        final PriceResponse actualPriceResponse = determinePriceUseCase.determinatePrice(priceDto);
+        final PriceResponseDto actualPriceResponse = determinePriceUseCase.determinatePrice(priceDto);
 
         assertNotNull(actualPriceResponse);
-        assertEquals(expectedPriceResponse.getProductId(), actualPriceResponse.getProductId());
-        assertEquals(expectedPriceResponse.getPrice(), actualPriceResponse.getPrice(), 0.0);
-        assertEquals(expectedPriceResponse.getCurrency(), actualPriceResponse.getCurrency());
+        assertEquals(expectedPriceResponse.productId(), actualPriceResponse.productId());
+        assertEquals(expectedPriceResponse.price(), actualPriceResponse.price(), 0.0);
+        assertEquals(expectedPriceResponse.currency(), actualPriceResponse.currency());
     }
 
     @Test

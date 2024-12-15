@@ -1,7 +1,7 @@
 package com.example.dynamicpricing.application.mapper;
 
+import com.example.dynamicpricing.application.dto.PriceResponseDto;
 import com.example.dynamicpricing.domain.model.Price;
-import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -50,39 +50,39 @@ class PriceUseCaseMapperTest {
     void givenValidPrice_whenMappingToPriceResponse_thenAllFieldsAreMappedCorrectly() {
         getPrice(PRICE, CURRENCY);
 
-        final PriceResponse response = priceUseCaseMapper.toResponse(priceEntity);
+        final PriceResponseDto response = priceUseCaseMapper.toResponseDto(priceEntity);
 
-        assertEquals(PRICE.doubleValue(), response.getPrice());
-        assertEquals(CURRENCY, response.getCurrency());
+        assertEquals(PRICE.doubleValue(), response.price());
+        assertEquals(CURRENCY, response.currency());
     }
 
     @Test
     void givenPriceWithZeroAmount_whenMappingToPriceResponse_thenAmountIsZero() {
         getPrice(BigDecimal.ZERO, CURRENCY);
 
-        final PriceResponse response = priceUseCaseMapper.toResponse(priceEntity);
+        final PriceResponseDto response = priceUseCaseMapper.toResponseDto(priceEntity);
 
-        assertEquals(BigDecimal.ZERO.doubleValue(), response.getPrice());
-        assertEquals(CURRENCY, response.getCurrency());
+        assertEquals(BigDecimal.ZERO.doubleValue(), response.price());
+        assertEquals(CURRENCY, response.currency());
     }
 
     @Test
     void givenPriceWithEmptyCurrency_whenMappingToPriceResponse_thenCurrencyIsEmpty() {
         getPrice(PRICE, EMPTY_CURRENCY);
 
-        final PriceResponse response = priceUseCaseMapper.toResponse(priceEntity);
+        final PriceResponseDto response = priceUseCaseMapper.toResponseDto(priceEntity);
 
-        assertEquals(PRICE.doubleValue(), response.getPrice());
-        assertEquals(EMPTY_CURRENCY, response.getCurrency());
+        assertEquals(PRICE.doubleValue(), response.price());
+        assertEquals(EMPTY_CURRENCY, response.currency());
     }
 
     @Test
     void givenPriceWithNullCurrency_whenMappingToPriceResponse_thenCurrencyIsNull() {
         getPrice(PRICE, NULL_CURRENCY);
 
-        final PriceResponse response = priceUseCaseMapper.toResponse(priceEntity);
+        final PriceResponseDto response = priceUseCaseMapper.toResponseDto(priceEntity);
 
-        assertEquals(PRICE.doubleValue(), response.getPrice());
-        assertEquals(NULL_CURRENCY, response.getCurrency());
+        assertEquals(PRICE.doubleValue(), response.price());
+        assertEquals(NULL_CURRENCY, response.currency());
     }
 }

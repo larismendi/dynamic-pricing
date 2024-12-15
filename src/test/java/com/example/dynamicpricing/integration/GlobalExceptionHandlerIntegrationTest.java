@@ -28,8 +28,7 @@ class GlobalExceptionHandlerIntegrationTest {
     private static final String BRAND_ID_IS_REQUIRED = "Brand ID is required";
     private static final String PRODUCT_ID_MUST_BE_POSITIVE = "Product ID must be positive";
     private static final String BRAND_ID_MUST_BE_POSITIVE = "Brand ID must be positive";
-    private static final String INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE =
-            "Invalid value provided for 'applicationDate'";
+    private static final String INVALID_VALUE_FOR_APPLICATION_DATE = "Invalid value for 'applicationDate'";
 
     @Container
     static MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0")
@@ -80,6 +79,6 @@ class GlobalExceptionHandlerIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.applicationDate").value(
-                        org.hamcrest.Matchers.containsString(INVALID_VALUE_PROVIDED_FOR_APPLICATION_DATE)));
+                        org.hamcrest.Matchers.containsString(INVALID_VALUE_FOR_APPLICATION_DATE)));
     }
 }

@@ -6,4 +6,5 @@ public record PriceDto(
         int productId,
         int brandId,
         ZonedDateTime applicationDate
-) {}
+) {
+}

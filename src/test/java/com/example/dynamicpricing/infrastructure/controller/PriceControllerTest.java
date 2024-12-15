@@ -1,10 +1,12 @@
 package com.example.dynamicpricing.infrastructure.controller;
 
 import com.example.dynamicpricing.application.dto.PriceDto;
+import com.example.dynamicpricing.application.dto.PriceResponseDto;
 import com.example.dynamicpricing.application.usecase.DeterminePriceUseCase;
 import com.example.dynamicpricing.infrastructure.controller.request.PriceRequest;
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import com.example.dynamicpricing.infrastructure.mapper.PriceRequestMapper;
+import com.example.dynamicpricing.infrastructure.mapper.PriceResponseMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -41,11 +43,15 @@ class PriceControllerTest {
     @Mock
     private PriceRequestMapper priceRequestMapper;
 
+    @Mock
+    private PriceResponseMapper priceResponseMapper;
+
     @InjectMocks
     private PriceController priceController;
 
     private PriceRequest priceRequest;
     private PriceDto priceDto;
+    private PriceResponseDto priceResponseDto;
 
     void getPriceRequest() {
         priceRequest = PriceRequest.builder()
@@ -59,10 +65,23 @@ class PriceControllerTest {
         priceDto = new PriceDto(PRODUCT_ID, BRAND_ID, APPLICATION_DATE);
     }
 
+    void getPriceResponseDto() {
+        priceResponseDto = new PriceResponseDto(
+                PRODUCT_ID,
+                BRAND_ID,
+                PRICE_LIST,
+                START_DATE.toString(),
+                END_DATE.toString(),
+                PRICE.doubleValue(),
+                CURRENCY
+        );
+    }
+
     @Test
     void givenValidPriceRequest_whenCalculatePrice_thenReturnsPriceResponse() {
         getPriceRequest();
         getPriceDto();
+        getPriceResponseDto();
         final PriceResponse expectedResponse = PriceResponse.builder()
                 .productId(PRODUCT_ID)
                 .brandId(BRAND_ID)
@@ -74,7 +93,8 @@ class PriceControllerTest {
                 .build();
 
         when(priceRequestMapper.toDto(priceRequest)).thenReturn(priceDto);
-        when(determinePriceUseCase.determinatePrice(priceDto)).thenReturn(expectedResponse);
+        when(determinePriceUseCase.determinatePrice(priceDto)).thenReturn(priceResponseDto);
+        when(priceResponseMapper.toPriceResponse(priceResponseDto)).thenReturn(expectedResponse);
 
         final ResponseEntity<PriceResponse> responseEntity = priceController.calculatePrice(priceRequest);
 
@@ -84,6 +104,7 @@ class PriceControllerTest {
 
         verify(priceRequestMapper).toDto(priceRequest);
         verify(determinePriceUseCase).determinatePrice(priceDto);
+        verify(priceResponseMapper).toPriceResponse(priceResponseDto);
     }
 
     @Test

@@ -6,6 +6,7 @@ import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
 import com.example.dynamicpricing.infrastructure.mapper.PriceEntityMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataAccessException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -24,6 +25,8 @@ public class PriceRepositoryImpl implements PriceRepository {
             "Found {} price(s) for productId: {}, brandId: {}, applicationDate: {}";
     private static final String FETCHING_PRICES_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE =
             "Fetching prices for productId: {}, brandId: {}, applicationDate: {}";
+    private static final String ERROR_ACCESSING_DATA_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE =
+            "Error accessing data for productId: {}, brandId: {}, applicationDate: {}";
 
     private final MongoPriceRepository mongoPriceRepository;
     private final PriceEntityMapper priceEntityMapper;
@@ -37,18 +40,23 @@ public class PriceRepositoryImpl implements PriceRepository {
     @Override
     public List<Price> findPrices(int productId, int brandId, ZonedDateTime applicationDate) {
         logger.info(FETCHING_PRICES_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE, productId, brandId, applicationDate);
+        try {
+            final Instant applicationInstant = applicationDate.toInstant();
+            final Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
 
-        final Instant applicationInstant = applicationDate.toInstant();
-        final Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
+            final List<PriceEntity> priceEntities =
+                    mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
+                            productId, brandId, applicationInstant, pageable);
 
-        final List<PriceEntity> priceEntities =
-                mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
-                        productId, brandId, applicationInstant, pageable);
-
-        logger.info(FOUND_PRICE_S_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE,
-                priceEntities.size(), productId, brandId, applicationDate);
-        return priceEntities.stream()
-                .map(entity -> priceEntityMapper.toDomain(entity, applicationDate.getZone()))
-                .collect(Collectors.toList());
+            logger.info(FOUND_PRICE_S_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE,
+                    priceEntities.size(), productId, brandId, applicationDate);
+            return priceEntities.stream()
+                    .map(entity -> priceEntityMapper.toDomain(entity, applicationDate.getZone()))
+                    .collect(Collectors.toList());
+        } catch (DataAccessException ex) {
+            logger.error(ERROR_ACCESSING_DATA_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE,
+                    productId, brandId, applicationDate, ex);
+            throw ex;
+        }
     }
 }

@@ -2,7 +2,6 @@ package com.example.dynamicpricing.integration;
 
 import com.example.dynamicpricing.infrastructure.controller.response.PriceResponse;
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
-import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -59,9 +58,6 @@ class PriceControllerIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    @Autowired
-    private MongoPriceRepository mongoPriceRepository;
-
     @BeforeAll
     static void setUpBeforeAll() {
         final int mongoPort = mongoDBContainer.getMappedPort(MONGO_PORT);
@@ -108,8 +104,8 @@ class PriceControllerIntegrationTest {
                 .price(PRICE_2.doubleValue())
                 .curr(CURRENCY)
                 .build();
-        mongoPriceRepository.save(priceEntity1);
-        mongoPriceRepository.save(priceEntity2);
+        mongoTemplate.insert(priceEntity1);
+        mongoTemplate.insert(priceEntity2);
     }
 
     @Test

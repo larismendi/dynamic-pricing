@@ -1,7 +1,6 @@
 package com.example.dynamicpricing.infrastructure.database;
 
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
-import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,10 +20,7 @@ import static org.mockito.Mockito.*;
 
 class DataInitializerTest {
 
-    private static final int TWO_TIMES = 2;
-
-    @Mock
-    private MongoPriceRepository mongoPriceRepository;
+    private static final int ONE_TIME = 1;
 
     @Mock
     private MongoTemplate mongoTemplate;
@@ -42,7 +38,7 @@ class DataInitializerTest {
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        dataInitializer = new DataInitializer(mongoPriceRepository, mongoTemplate, inputStreamSupplier);
+        dataInitializer = new DataInitializer(mongoTemplate, inputStreamSupplier);
     }
 
     @AfterEach
@@ -60,19 +56,19 @@ class DataInitializerTest {
 
         inputStreamSupplier = () -> inputStream;
 
-        dataInitializer = new DataInitializer(mongoPriceRepository, mongoTemplate, inputStreamSupplier);
+        dataInitializer = new DataInitializer(mongoTemplate, inputStreamSupplier);
 
-        doNothing().when(mongoPriceRepository).deleteAll();
-        when(mongoPriceRepository.saveAll(any(Iterable.class))).thenReturn(Collections.emptyList());
+        doNothing().when(mongoTemplate).dropCollection(PriceEntity.class);
+        when(mongoTemplate.insertAll(anyList())).thenReturn(Collections.emptyList());
         when(mongoTemplate.indexOps(PriceEntity.class)).thenReturn(indexOperations);
+        when(indexOperations.ensureIndex(any(Index.class))).thenAnswer(invocation -> null);
 
         dataInitializer.run();
 
-        verify(mongoPriceRepository).deleteAll();
-        verify(mongoPriceRepository).saveAll(anyList());
-
-        verify(mongoTemplate, times(TWO_TIMES)).indexOps(PriceEntity.class);
-        verify(indexOperations, times(TWO_TIMES)).ensureIndex(any(Index.class));
+        verify(mongoTemplate, times(ONE_TIME)).dropCollection(PriceEntity.class);
+        verify(mongoTemplate, times(ONE_TIME)).insertAll(anyList());
+        verify(mongoTemplate, times(ONE_TIME)).indexOps(PriceEntity.class);
+        verify(indexOperations, times(ONE_TIME)).ensureIndex(any(Index.class));
     }
 
     @Test
@@ -85,7 +81,8 @@ class DataInitializerTest {
         }).when(inputStreamSupplier).get();
 
         assertThrows(IOException.class, () -> dataInitializer.run());
-        verify(mongoPriceRepository, never()).deleteAll();
-        verify(mongoPriceRepository, never()).saveAll(anyList());
+        verify(mongoTemplate, never()).dropCollection(PriceEntity.class);
+        verify(mongoTemplate, never()).insertAll(anyList());
+        verify(mongoTemplate, never()).indexOps(PriceEntity.class);
     }
 }

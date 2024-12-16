@@ -7,9 +7,10 @@ import com.example.dynamicpricing.infrastructure.mapper.PriceEntityMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataAccessException;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
@@ -28,12 +29,12 @@ public class PriceRepositoryImpl implements PriceRepository {
     private static final String ERROR_ACCESSING_DATA_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE =
             "Error accessing data for productId: {}, brandId: {}, applicationDate: {}";
 
-    private final MongoPriceRepository mongoPriceRepository;
+    private final MongoTemplate mongoTemplate;
     private final PriceEntityMapper priceEntityMapper;
 
-    public PriceRepositoryImpl(MongoPriceRepository mongoPriceRepository,
+    public PriceRepositoryImpl(MongoTemplate mongoTemplate,
                                PriceEntityMapper priceEntityMapper) {
-        this.mongoPriceRepository = mongoPriceRepository;
+        this.mongoTemplate = mongoTemplate;
         this.priceEntityMapper = priceEntityMapper;
     }
 
@@ -42,11 +43,25 @@ public class PriceRepositoryImpl implements PriceRepository {
         logger.info(FETCHING_PRICES_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE, productId, brandId, applicationDate);
         try {
             final Instant applicationInstant = applicationDate.toInstant();
-            final Pageable pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "priority"));
 
-            final List<PriceEntity> priceEntities =
-                    mongoPriceRepository.findTopByProductIdAndBrandIdAndApplicationDate(
-                            productId, brandId, applicationInstant, pageable);
+            final Query query = new Query()
+                    .addCriteria(Criteria.where("productId").is(productId)
+                            .and("brandId").is(brandId)
+                            .and("startDate").lte(applicationInstant)
+                            .and("endDate").gte(applicationInstant))
+                    .with(Sort.by(Sort.Direction.DESC, "priority"))
+                    .limit(1);
+
+            query.fields()
+                    .include("productId")
+                    .include("brandId")
+                    .include("priceList")
+                    .include("startDate")
+                    .include("endDate")
+                    .include("price")
+                    .include("curr");
+
+            final List<PriceEntity> priceEntities = mongoTemplate.find(query, PriceEntity.class);
 
             logger.info(FOUND_PRICE_S_FOR_PRODUCT_ID_BRAND_ID_APPLICATION_DATE,
                     priceEntities.size(), productId, brandId, applicationDate);

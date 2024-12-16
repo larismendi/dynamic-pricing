@@ -17,6 +17,7 @@ pricing rules based on various parameters and apply them at different times.
 - [Configuration](#configuration)
 - [Testing](#testing)
 - [API Documentation](#api-documentation)
+- [Advanced Querying and Data Management with MongoTemplate](#advanced-querying-and-data-management-with-mongotemplate)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -124,7 +125,7 @@ The application includes unit tests to validate individual components and busine
 
 ### Integration Testing
 
-The integration tests test the full flow of the application, including database interactions, API responses, and error
+The integration tests cover the entire application flow, including database interactions, API responses, and error
 handling.
 
 ## Code Coverage with JaCoCo
@@ -186,11 +187,11 @@ This provides a detailed view of all available endpoints, their parameters, and 
 
 **Query Parameters:**
 
-| Parameter       | Type    | Description                                |
-|------------------|---------|--------------------------------------------|
-| `productId`      | `int`   | ID of the product (required).              |
-| `brandId`        | `int`   | ID of the brand (required).                |
-| `applicationDate`| `string`| Date and time in ISO 8601 format (required).|
+| Parameter         | Type     | Description                                  |
+|-------------------|----------|----------------------------------------------|
+| `productId`       | `int`    | ID of the product (required).                |
+| `brandId`         | `int`    | ID of the brand (required).                  |
+| `applicationDate` | `string` | Date and time in ISO 8601 format (required). |
 
 #### Example Successful Request With UTC:
 
@@ -232,13 +233,13 @@ curl --location 'http://localhost:8080/api/price?productId=35455&brandId=1&appli
 
 ```json
 {
-   "productId": 35455,
-   "brandId": 1,
-   "priceList": 1,
-   "startDate": "2020-06-14T02:00+02:00",
-   "endDate": "2021-01-01T01:59:59+02:00",
-   "price": 35.5,
-   "currency": "EUR"
+  "productId": 35455,
+  "brandId": 1,
+  "priceList": 1,
+  "startDate": "2020-06-14T02:00+02:00",
+  "endDate": "2021-01-01T01:59:59+02:00",
+  "price": 35.5,
+  "currency": "EUR"
 }
 ```
 
@@ -294,6 +295,76 @@ Application is healthy
 ```plaintest
 200 OK: The application is healthy.
 ```
+
+## Advanced Querying and Data Management with MongoTemplate
+
+### Design Decisions
+
+#### Choice of MongoDB over H2:
+
+- The decision to use MongoDB was driven by its suitability for modern, scalable applications. MongoDB offers
+  flexibility with semi-structured data and powerful query capabilities, such as advanced aggregation frameworks
+  and efficient indexing strategies, making it an excellent fit for handling complex queries and ensuring scalability.
+- While H2 is a great option for lightweight applications and testing, MongoDB’s ability to manage large datasets
+  and its robust features make it a better choice for scenarios where long-term performance and flexibility are key.
+- Additionally, given the nature of the project, the typical requirements of production environments, and the
+  opportunity to demonstrate MongoDB expertise, it was chosen to align with industry best practices for scalability,
+  data handling, and consistency with the customer's ecosystem.
+
+#### Use of `MongoTemplate` vs `Pageable/MongoRepository`:
+
+- I chose to use `MongoTemplate` due to its ability to handle more complex and custom queries in MongoDB, such as
+  combining advanced filters, specific projections, and dynamic sorting.
+- While `MongoRepository` is convenient for basic CRUD operations, it lacks the flexibility to handle sophisticated
+  queries or scenarios where fine-grained control over database behavior is essential.
+
+#### Specific Projections:
+
+- Logic has been added to include only the necessary fields in the queries (`include` in projection). This improves
+  efficiency by reducing the amount of data transferred from the database.
+- The explicit transformation from `PriceEntity` to `Price` ensures that the `ZoneId` is handled correctly, guaranteeing
+  that the dates are formatted according to the client's time zone.
+
+#### Index Definitions:
+
+- Index creation is handled at the application startup using `MongoTemplate.IndexOperations`. This ensures that queries
+  benefit from correctly defined indexes, improving performance.
+
+### Changes Made
+
+#### Test Data Generation:
+
+- Implemented representative test data in MongoDB to simulate real-world scenarios.
+
+#### Repository Refactoring:
+
+- Migrated from `MongoRepository` to `MongoTemplate`.
+- Created detailed queries using `Criteria` and `Query`.
+- Included specific projections to optimize performance.
+
+#### Result Mapping:
+
+- Explicit transformation from `PriceEntity` to the domain object `Price`, incorporating `ZoneId` in the dates to meet
+  the client's requirements.
+
+#### Index Management:
+
+- Implemented appropriate indexes using `MongoTemplate.IndexOperations`.
+
+### Expected Benefits
+
+#### Real-World Compatibility:
+
+- MongoDB better reflects the client’s production environment, ensuring the solutions developed are directly applicable.
+
+#### Improved Efficiency:
+
+- Faster queries due to well-defined indexes and reduced projections.
+- Lower data load over the network and clearer results.
+
+#### Flexibility:
+
+- Ability to handle complex queries and adapt to future changes without large-scale refactoring.
 
 ## Contributing
 

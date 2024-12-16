@@ -20,7 +20,6 @@ public class PriceEntityMapperImpl implements PriceEntityMapper {
                 .endDate(entity.getEndDate().atZone(zoneId))
                 .price(BigDecimal.valueOf(entity.getPrice()))
                 .currency(entity.getCurr())
-                .priority(entity.getPriority())
                 .build();
     }
 }

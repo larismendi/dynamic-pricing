@@ -21,7 +21,6 @@ class PriceEntityMapperImplTest {
     private static final int BRAND_ID = 1;
     private static final int PRODUCT_ID = 100;
     private static final int PRICE_LIST = 1;
-    private static final int PRIORITY = 1;
     private static final BigDecimal PRICE = BigDecimal.valueOf(99.99);
     private static final String CURRENCY = "EUR";
     private static final Instant START_DATE = ZonedDateTime.of(2023, 11, 1, 0, 0, 0, 0, ZoneId.of("UTC")).toInstant();
@@ -44,7 +43,6 @@ class PriceEntityMapperImplTest {
                 .endDate(END_DATE)
                 .price(PRICE.doubleValue())
                 .curr(CURRENCY)
-                .priority(PRIORITY)
                 .build();
 
         final Price result = priceEntityMapper.toDomain(priceEntity, ZoneId.of("UTC"));
@@ -57,6 +55,5 @@ class PriceEntityMapperImplTest {
         assertEquals(priceEntity.getEndDate(), result.getEndDate().toInstant());
         assertEquals(BigDecimal.valueOf(priceEntity.getPrice()), result.getPrice());
         assertEquals(priceEntity.getCurr(), result.getCurrency());
-        assertEquals(priceEntity.getPriority(), result.getPriority());
     }
 }

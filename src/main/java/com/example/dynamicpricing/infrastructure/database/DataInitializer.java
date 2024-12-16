@@ -1,7 +1,6 @@
 package com.example.dynamicpricing.infrastructure.database;
 
 import com.example.dynamicpricing.infrastructure.entity.PriceEntity;
-import com.example.dynamicpricing.infrastructure.repository.MongoPriceRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
@@ -28,14 +27,11 @@ public class DataInitializer implements CommandLineRunner {
             = "Initial data successfully loaded into MongoDB";
     private static final String ERROR_LOADING_INITIAL_DATA = "Error loading initial data: {}";
 
-    private final MongoPriceRepository mongoPriceRepository;
     private final MongoTemplate mongoTemplate;
     private final Supplier<InputStream> inputStreamSupplier;
 
-    public DataInitializer(MongoPriceRepository mongoPriceRepository,
-                           MongoTemplate mongoTemplate,
+    public DataInitializer(MongoTemplate mongoTemplate,
                            Supplier<InputStream> inputStreamSupplier) {
-        this.mongoPriceRepository = mongoPriceRepository;
         this.mongoTemplate = mongoTemplate;
         this.inputStreamSupplier = inputStreamSupplier;
     }
@@ -50,8 +46,10 @@ public class DataInitializer implements CommandLineRunner {
             final InputStream inputStream = inputStreamSupplier.get();
             final List<PriceEntity> prices = mapper.readValue(inputStream, new TypeReference<>() {
             });
-            mongoPriceRepository.deleteAll();
-            mongoPriceRepository.saveAll(prices);
+
+            deleteAllPrices();
+
+            saveAllPrices(prices);
 
             createIndexes();
 
@@ -62,14 +60,22 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    private void deleteAllPrices() {
+        mongoTemplate.dropCollection(PriceEntity.class);
+        logger.info("All existing prices have been deleted.");
+    }
+
+    private void saveAllPrices(List<PriceEntity> prices) {
+        mongoTemplate.insertAll(prices);
+        logger.info("Prices successfully saved into MongoDB.");
+    }
+
     private void createIndexes() {
         mongoTemplate.indexOps(PriceEntity.class).ensureIndex(new Index()
                 .on("productId", Sort.Direction.ASC)
                 .on("brandId", Sort.Direction.ASC)
                 .on("startDate", Sort.Direction.ASC)
-                .on("endDate", Sort.Direction.ASC));
-
-        mongoTemplate.indexOps(PriceEntity.class).ensureIndex(new Index()
+                .on("endDate", Sort.Direction.ASC)
                 .on("priority", Sort.Direction.DESC));
 
         logger.info("Indexes successfully created on the 'prices' collection");
